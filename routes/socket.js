@@ -22,7 +22,7 @@ module.exports = exports = function(io) {
 			// Si le tableau des rooms est vide
 			if(roomArray.length == 0){
 
-				var tmpObj = {idRoom: tmpId, players: [socket.id]}
+				var tmpObj = {idRoom: tmpId, players: [{idPlayer: socket.id, ready: false}]}
 
 				// On push l'id de la room dans l'array
 				roomArray.push(tmpObj);
@@ -37,7 +37,8 @@ module.exports = exports = function(io) {
 
 				// Si l'id recuperé est bien defini
 				if(idResult){
-					var tmpObj = {idRoom: idResult, players: [socket.id]}
+					var tmpObj = {idRoom: idResult, players: [{idPlayer: socket.id, ready: false}]}
+
 					// On push la room dans l'array des rooms
 					roomArray.push(tmpObj);
 
@@ -57,7 +58,7 @@ module.exports = exports = function(io) {
 				if(roomArray[i].idRoom == link){
 
 					// On push le nouveau joueurs dans les informations de la room
-					roomArray[i].players.push(socket.id);
+					roomArray[i].players.push({idPlayer: socket.id, ready: false});
 
 					// Le joueur peut rejoindre la partie ciblé
 					socket.emit('joinRoom', roomArray[i]);
@@ -80,7 +81,7 @@ module.exports = exports = function(io) {
 					if(roomArray[i].players.length != maxPlayers){
 
 						// On push le nouveau joueurs dans les informations de la room
-						roomArray[i].players.push(socket.id);
+						roomArray[i].players.push({idPlayer: socket.id, ready: false});
 
 						// Le joueur peut rejoindre la partie ciblé
 						socket.emit('joinRoom', roomArray[i]);
@@ -97,11 +98,69 @@ module.exports = exports = function(io) {
 			}
 			
 		});
+
+		// Un player previent qu'il vient d'arriver dans une room
+		socket.on('newPlayerJoinedRoom', function(room){
+			// Il rejoint la room de socket pour la suite
+			socket.join(room.idRoom);
+
+			// On envoi aux autres participant de la room qu'un nouveau joueur est present
+			io.sockets.to(room.idRoom).emit('newRoomReceived', room);
+		});
+
+		// Un player previent qu'il est pret pour le lancement de la game
+		socket.on('changeReadyState', function(room){
+
+			var obj = room;
+
+			// Pour chaque player
+			for(var i = 0; i < obj.players.length; i++){
+				// Si le players est bien le user ciblé
+				if(obj.players[i].idPlayer == socket.id){
+
+					console.log(obj.players[i].ready);
+					if(obj.players[i].ready == true){
+						obj.players[i].ready = false;
+					}else{
+						obj.players[i].ready = true;
+					}
+				}
+			}
+
+			// On envoi aux autres participant de la room qu'un nouveau joueur est present
+			io.sockets.to(obj.idRoom).emit('newRoomReceived', obj);
+		});
+
+		// Le createur lance la partie
+		socket.on('beginGame', function(room){
+			var obj = room;
+
+			// Pour chaque room disponible
+			for(var i = 0; i < roomArray.length; i++){
+				// Si la room est celle ciblé
+				if(roomArray[i].idRoom == obj.idRoom){
+					// On la retire des room en attente
+					roomArray.splice(i, 1);
+				}
+			}
+
+			// La partie commence au lvl 1
+			obj.level = 1;
+			// Et on genere la map
+			obj.map = generateMap(obj.level);
+
+			// On push la room dans les room en game
+			roomPlayingArray.push(obj);
+
+			// On envoi au client la nouvelle room, que le jeu commence!
+			io.sockets.to(obj.idRoom).emit('receiveBeginGame', obj);
+		});
 		
 /************************************************/
 /*******************	GAME	*****************/
 /************************************************/
-
+		
+	/*
 		socket.on('move.player.client', function(data){
 
 			var obj = JSON.parse(data);
@@ -125,6 +184,7 @@ module.exports = exports = function(io) {
 
 		    io.sockets.to(obj.room).emit('jump.player.server', tmp);
 		});
+	*/
 
 /************************************************/
 /******************	UTILITAIRE	*****************/
@@ -137,11 +197,27 @@ module.exports = exports = function(io) {
 		socket.on('disconnect', function(id){
 		    console.log('Un utilisateur s\'est déconnecté');
 
+		    // Pour chaque room en cours
 			for(var i=0; i < roomArray.length; i++) {
-			  if(roomArray[i].playerOne == socket.id){
-			  	roomArray.splice(i,1);
-			  }
+
+				// Pour chaque player de la room ciblé
+				for (var u = 0; u < roomArray[i].players.length; u++) {
+					// Si le player ciblé
+					if(roomArray[i].players[u].idPlayer == socket.id){
+						// On le retire du tableau des players de la room
+						roomArray[i].players.splice(u,1);
+						// Puis on envoi aux autres qu'un user s'est deconnecté à l'aide d'une nouvelle instance de room
+						io.sockets.to(roomArray[i].idRoom).emit('newRoomReceived', roomArray[i]);
+					}
+				};
+
+				// Si la room se retrouve vide de players
+				if(roomArray[i].players.length == 0){
+					// On la supprime
+					roomArray.splice(i,1);
+				}			  
 			}
+
 		});
 
 	});
@@ -149,6 +225,13 @@ module.exports = exports = function(io) {
 /************************************************/
 /******************	FUNCTION	*****************/
 /************************************************/
+
+	// Genere une map selon le lvl de la partie
+	function generateMap(lvl){
+
+		// A FAIRE
+		return null;
+	}
 
 	function checkIdOnRoomArray(id){
 
@@ -164,35 +247,6 @@ module.exports = exports = function(io) {
 
 		// Si l'id n'est pas presente dans l'array des rooms on return l'id
 		return id;
-	}
-
-	function generateMapTemplate(ligneAttendu, colonneAttendu){
-
-		var tmpArray = [];
-		var nbLigne = ligneAttendu;
-		var nbColonne = colonneAttendu;
-
-		for(var ligne = 0; ligne < nbLigne; ligne++){
-
-			var arrayColonne = []
-
-  			for(var colonne = 0; colonne < nbColonne; colonne++){
-
-  				var tmpRandom = Math.floor(1 + Math.random() * 5);
-  				
-  				if(ligne == 0){
-  					arrayColonne.push(1);
-  				}else{
-  					arrayColonne.push(tmpRandom);
-  				}
-  						
-  			}
-
-  			tmpArray.push(arrayColonne)
-  		}
-
-  		console.log(tmpArray);
-  		return tmpArray;
 	}
 
 	function generateRandomId(nb)

@@ -17,10 +17,9 @@ joinChoice.prototype = {
 	socketReception: function(){
 		socket.on('joinRoom', function(obj){
 			console.log(obj);
-			/*
+			
 			USER_ROOM = obj.idRoom;
 			currentGame.state.start("Room", true, false, obj);
-			*/
 		});
 
 		socket.on('errorReceive', function(err){

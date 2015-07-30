@@ -1,11 +1,9 @@
 User = function(game, pos, color){
-	this.currentGame = game;
-	this.textureRegistry = {};
+	this.game = game;
+
 	this.pos = pos;
 	this.color = color;
 	this.user;
-
-	decelerationRate = 3;
 
 	this.create();
 };
@@ -17,56 +15,26 @@ User.prototype = {
 
   	create: function(){
 
-  		this.user = this.currentGame.add.sprite(this.pos.x, this.pos.y, this.createBlock({x:32,y:32}, this.color));
+  		this.user = this.game.add.sprite(this.pos.x, this.pos.y, this.createBlock({x:32,y:32}, this.color));
 		this.user.anchor.setTo(0.5, 0.5);
 
-		this.currentGame.physics.arcade.enableBody(this.user);
+		this.game.physics.arcade.enableBody(this.user);
 
 		this.user.body.collideWorldBounds = false;
 		this.user.body.mass = 40;
 	},
 
 	update: function(){
-		
-		if (this.user.body.velocity.x < 0) {
-			this.user.body.velocity.x += decelerationRate;
-		}else if(this.user.body.velocity.x > 0){
-			this.user.body.velocity.x -= decelerationRate;
-		}
-
-		//this.detectLimitWorld();
-	},
-
-	detectLimitWorld: function(){
-		if(this.user.x < 0){
-			this.user.x = this.currentGame.world.width;
-		}else if(this.user.x > 0){
-			this.user.x = 0
-		}
-
-		if(this.user.y < 0){
-			this.user.y = 0;
-		}else if(this.user.y > this.currentGame.world.height){
-			this.gameOver();
-		}
-	},
-
-	gameOver: function(){
-		console.log("Game over");
-		this.user.kill();
+    	this.user.rotation = this.game.physics.arcade.angleToPointer(this.user);
 	},
 
 	createBlock: function(size, color) {
 		var name = size.x + '_' + color;
 
-		if(this.textureRegistry[name]) {
-			return this.textureRegistry[name];
-		}
-
-		var bmd = this.currentGame.add.bitmapData(size.x, size.y);
+		var bmd = this.game.add.bitmapData(size.x, size.y);
 		bmd.ctx.fillStyle = color;
 		bmd.ctx.fillRect(0,0, size.x, size.y);
-		this.textureRegistry[name] = bmd;
+
 		return bmd;
 	},
 
