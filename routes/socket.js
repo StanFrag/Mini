@@ -160,31 +160,9 @@ module.exports = exports = function(io) {
 /*******************	GAME	*****************/
 /************************************************/
 		
-	/*
-		socket.on('move.player.client', function(data){
-
-			var obj = JSON.parse(data);
-
-			var tmp = JSON.stringify({
-		    	posX: obj.params.posX,  
-		    	idPlayer: obj.idPlayer,
-		    });
-
-		    io.sockets.to(obj.room).emit('move.player.server', tmp);
+		socket.on('player.rotation', function(data){
+		    io.sockets.to(data.idRoom).emit('player.rotation', {idUser: data.idUser , rotation: data.rotation});
 		});
-
-		socket.on('jump.player.client', function(data){
-
-			var obj = JSON.parse(data);
-
-			var tmp = JSON.stringify({
-		    	posY: obj.params.posY,  
-		    	idPlayer: obj.idPlayer,
-		    });
-
-		    io.sockets.to(obj.room).emit('jump.player.server', tmp);
-		});
-	*/
 
 /************************************************/
 /******************	UTILITAIRE	*****************/

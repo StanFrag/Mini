@@ -1,9 +1,16 @@
-User = function(game, pos, color){
+User = function(game, pos, color, idUser){
 	this.game = game;
 
 	this.pos = pos;
 	this.color = color;
 	this.user;
+
+	this.speed = 0;
+	this.ratioDecelerate = 5;
+
+	this.revolutionRate = 0;
+
+	this.idUser = idUser;
 
 	this.create();
 };
@@ -25,7 +32,35 @@ User.prototype = {
 	},
 
 	update: function(){
-    	this.user.rotation = this.game.physics.arcade.angleToPointer(this.user);
+
+		if(this.speed > 0){
+			this.speed -= this.ratioDecelerate;
+		}else if(this.speed < 0){
+			this.speed += this.ratioDecelerate;
+		}
+
+    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, this.speed, this.user.body.velocity);
+	},
+
+	revolution: function(value){
+
+		var dist = this.game.physics.arcade.distanceToPointer(this.user, this.game.input.activePointer);
+
+		var targetAngle = this.game.math.angleBetween(
+	        this.user.x, this.user.y,
+	        this.game.input.activePointer.x, this.game.input.activePointer.y
+	    );
+
+	    var rad = this.game.math.degToRad(targetAngle);
+	    this.revolutionRate += 0.0001;
+		var toto = this.user.rotation + this.revolutionRate;
+
+        this.user.x = this.game.input.mousePointer.x + Math.cos(toto) * dist;
+        this.user.y = this.game.input.mousePointer.y + Math.sin(toto) * dist;
+	},
+
+	followPointer: function(){
+		this.user.rotation = this.game.physics.arcade.angleToPointer(this.user);
 	},
 
 	createBlock: function(size, color) {
@@ -38,38 +73,39 @@ User.prototype = {
 		return bmd;
 	},
 
-	moveToX: function(posX){
-		//this.user.x = this.user.x + posX;
-		this.user.body.x += posX;
-	},
-
-	moveToY: function(posY){
-		//this.user.y = this.user.y - posY;
-		this.user.body.y -= posY;
-	},
-
 	getSprite: function(){
 		return this.user;
 	},
 
-	getBody: function(){
-		return this.user.body;
+	getUserId: function(){
+		return this.idUser;
 	},
 
-	getPosition: function(){
-		return {x: this.user.x, y: this.user.y}
+	setUserId: function(tmpId){
+		this.idUser = tmpId;
 	},
 
-	getPosX: function(){
-		return this.user.x;
+	getRotation: function(){
+		return this.user.rotation;
 	},
 
-	setPosX: function(posX){
-		this.user.x = posX;
+	setRotation: function(value){
+		this.user.rotation = value;
 	},
 
-	setPosition: function(x,y){
-		this.user.y = y;
-        this.user.x = x;
+	getSpeed: function(){
+		return this.speed;
+	},
+
+	setSpeed: function(value){
+		this.speed = value;
+	},
+
+	getSpeedSide: function(){
+		return this.speedSide;
+	},
+
+	setSpeedSide: function(value){
+		this.speedSide = value;
 	},
 }
