@@ -42,21 +42,27 @@ User.prototype = {
     	this.game.physics.arcade.velocityFromRotation(this.user.rotation, this.speed, this.user.body.velocity);
 	},
 
-	revolution: function(value){
-
-		var dist = this.game.physics.arcade.distanceToPointer(this.user, this.game.input.activePointer);
+	getTangente: function(valueX){
 
 		var targetAngle = this.game.math.angleBetween(
-	        this.user.x, this.user.y,
-	        this.game.input.activePointer.x, this.game.input.activePointer.y
+			this.game.input.activePointer.x, this.game.input.activePointer.y,
+	        this.user.x, this.user.y	        
 	    );
 
-	    var rad = this.game.math.degToRad(targetAngle);
-	    this.revolutionRate += 0.0001;
-		var toto = this.user.rotation + this.revolutionRate;
+	    var angle = (this.user.y - this.game.input.activePointer.y) / (this.user.x - this.game.input.activePointer.x);
 
-        this.user.x = this.game.input.mousePointer.x + Math.cos(toto) * dist;
-        this.user.y = this.game.input.mousePointer.y + Math.sin(toto) * dist;
+        var b = angle * this.user.x + this.user.y;
+        var x = valueX;
+        var y = angle * x + b;
+
+        return y;
+	},
+
+	revolution: function(value){
+		var dec = 50;
+
+        this.user.x += value / dec;
+        this.user.y += this.getTangente(value) / dec;
 	},
 
 	followPointer: function(){

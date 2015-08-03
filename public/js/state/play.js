@@ -57,9 +57,9 @@ play.prototype = {
 		var client = this.getCurrentUserById(USER_ID);
 
 	    if (cursors.left.isDown){
-	    	client.revolution(this.vitPlayers / 1000);
+	    	client.revolution(0.00001);
 	    }else if (cursors.right.isDown){
-	    	client.revolution(-this.vitPlayers / 1000);
+	    	client.revolution(-0.00001);
 	    }
 
 	    if(cursors.up.isDown){
