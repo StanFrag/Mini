@@ -5,6 +5,7 @@ var play = function(game){
 	this.playersArray = [];
 
 	this.vitPlayers = 100;
+	this.currentWeapon = {fireRate : 100, nextFire: 0};
 };
   
 play.prototype = {
@@ -57,15 +58,35 @@ play.prototype = {
 		var client = this.getCurrentUserById(USER_ID);
 
 	    if (cursors.left.isDown){
-	    	client.revolution(0.00001);
+	    	client.turnAroundPointer(this.vitPlayers);
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }else if (cursors.right.isDown){
-	    	client.revolution(-0.00001);
+	    	client.turnAroundPointer(-this.vitPlayers);
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }
 
 	    if(cursors.up.isDown){
 	    	client.setSpeed(this.vitPlayers);
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }else if(cursors.down.isDown){
 	    	client.setSpeed(-this.vitPlayers);
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
+	    }
+
+	    if (this.game.input.activePointer.isDown)
+	    {
+	        this.fire();
+	    }
+
+	},
+
+	fire: function() {
+	    if (this.game.time.now > this.currentWeapon.nextFire)
+	    {
+	        this.currentWeapon.nextFire = this.game.time.now + this.currentWeapon.fireRate;
+
+	        var bullet = new Bullet(this.game, this.currentWeapon, this.getCurrentUserById(USER_ID).getPosition(), {x:this.game.input.activePointer.x, y: this.game.input.activePointer.y });
+	        bullet.update();
 	    }
 	},
 
@@ -73,6 +94,13 @@ play.prototype = {
 		socket.on('player.rotation', function(data){
 			var tmpUser = _currentPlayState.getCurrentUserById(data.idUser);
 			tmpUser.setRotation(data.rotation);
+		});
+
+		socket.on('player.move', function(data){
+			if(data.idUser != USER_ID){
+				var tmpUser = _currentPlayState.getCurrentUserById(data.idUser);
+				tmpUser.setPosition(data.position);
+			}
 		});
 	},
 

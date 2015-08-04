@@ -8,8 +8,6 @@ User = function(game, pos, color, idUser){
 	this.speed = 0;
 	this.ratioDecelerate = 5;
 
-	this.revolutionRate = 0;
-
 	this.idUser = idUser;
 
 	this.create();
@@ -32,37 +30,18 @@ User.prototype = {
 	},
 
 	update: function(){
-
+		
 		if(this.speed > 0){
 			this.speed -= this.ratioDecelerate;
 		}else if(this.speed < 0){
 			this.speed += this.ratioDecelerate;
 		}
 
-    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, this.speed, this.user.body.velocity);
+    	this.game.physics.arcade.velocityFromAngle(this.user.angle, this.speed, this.user.body.velocity);
 	},
 
-	getTangente: function(valueX){
-
-		var targetAngle = this.game.math.angleBetween(
-			this.game.input.activePointer.x, this.game.input.activePointer.y,
-	        this.user.x, this.user.y	        
-	    );
-
-	    var angle = (this.user.y - this.game.input.activePointer.y) / (this.user.x - this.game.input.activePointer.x);
-
-        var b = angle * this.user.x + this.user.y;
-        var x = valueX;
-        var y = angle * x + b;
-
-        return y;
-	},
-
-	revolution: function(value){
-		var dec = 50;
-
-        this.user.x += value / dec;
-        this.user.y += this.getTangente(value) / dec;
+	turnAroundPointer: function(value){
+		this.game.physics.arcade.velocityFromAngle(this.user.angle - 90, value, this.user.body.velocity);
 	},
 
 	followPointer: function(){
@@ -107,11 +86,12 @@ User.prototype = {
 		this.speed = value;
 	},
 
-	getSpeedSide: function(){
-		return this.speedSide;
+	getPosition: function(){
+		return { x: this.user.x, y: this.user.y };
 	},
 
-	setSpeedSide: function(value){
-		this.speedSide = value;
-	},
+	setPosition: function(pos){
+		this.user.x = pos.x;
+		this.user.y = pos.y;
+	}
 }
