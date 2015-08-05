@@ -8,13 +8,20 @@ module.exports = exports = function(io) {
 
 	var nbCubeFromWidth = 50;
 
+	var coefEnnemiesOnMap = 5;
+	var coefEnnemies = 10;
+
+	var globalParams = {gameWidth: null, gameHeight: null};
+
 	io.on('connection', function (socket) {
 
 /************************************************/
 /*******************	MENU	*****************/
 /************************************************/
 
-		socket.on('createNewRoom', function(){
+		socket.on('createNewRoom', function(gameParams){
+
+			globalParams = gameParams;
 
 			// Generation d'une id random
 			var tmpId = generateRandomId(25);
@@ -148,6 +155,7 @@ module.exports = exports = function(io) {
 			obj.level = 1;
 			// Et on genere la map
 			obj.map = generateMap(obj.level);
+			obj.ennemiesInfo = generateEnnemies(obj.level);
 
 			// On push la room dans les room en game
 			roomPlayingArray.push(obj);
@@ -166,6 +174,10 @@ module.exports = exports = function(io) {
 
 		socket.on('player.move', function(data){
 		    io.sockets.to(data.idRoom).emit('player.move', {idUser: data.idUser , position: data.pos});
+		});
+
+		socket.on('player.fire', function(data){
+		    io.sockets.to(data.idRoom).emit('player.fire', {idUser: data.idUser , target: data.target});
 		});
 
 /************************************************/
@@ -207,6 +219,26 @@ module.exports = exports = function(io) {
 /************************************************/
 /******************	FUNCTION	*****************/
 /************************************************/
+
+	function generateEnnemies(lvl){
+
+		var maxOnMap = coefEnnemiesOnMap * lvl;
+		var nbEnnemies = coefEnnemies * lvl;
+
+		var list = [];
+
+		for(var i = 0; i < nbEnnemies; i++){
+			var tmpX = Math.random() < 0.5 ? (-1 * (Math.random() * 50)) : globalParams.gameWidth + Math.random() * 50;
+			var tmpY = 1 + Math.random() * globalParams.gameHeight;
+
+			var tmp = {life: 5, speed: 10, x: tmpX, y: tmpY};
+			list.push(tmp);
+		}
+
+		var obj = {maxEnnemiesOnMap: maxOnMap, listEnnemies: list}
+
+		return obj;
+	}
 
 	// Genere une map selon le lvl de la partie
 	function generateMap(lvl){

@@ -16,7 +16,7 @@ Bullet.prototype = {
 	},
 
   	create: function(){
-  		this.bullet = this.game.add.sprite(this.userPos.x, this.userPos.y, this.createBlock({x:10,y:10}, this.color));
+  		this.bullet = this.game.add.sprite(0, 0, this.createBlock({x:5,y:5}, this.color));
 		this.bullet.anchor.setTo(0.5, 0.5);
 
 		this.game.physics.arcade.enableBody(this.bullet);
@@ -25,14 +25,16 @@ Bullet.prototype = {
 	},
 
 	update: function(){
-		this.game.physics.arcade.moveToXY(this.bullet, this.pointer.x, this.pointer.y, 300);
 		this.detectOut();
+	},
+
+	run:function(target){
+		this.game.physics.arcade.moveToObject(this.bullet, target, this.weapon.speedBullet);
 	},
 
 	detectOut: function(){
 		if(this.bullet.x < 0 || this.bullet.x > this.game.world.width){
 			this.bullet.destroy();
-			console.log("bullet destroy");
 		}
 	},
 
@@ -44,5 +46,9 @@ Bullet.prototype = {
 		bmd.ctx.fillRect(0,0, size.x, size.y);
 
 		return bmd;
+	},
+
+	getSprite: function(){
+		return this.bullet;
 	},
 }

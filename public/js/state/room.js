@@ -28,7 +28,6 @@ room.prototype = {
 
 	socketReception: function(){
 		socket.on('newRoomReceived', function(room){
-
 			console.log(room);
 			// On reatribu la room recu a la room de la page client
 			this.room = room;

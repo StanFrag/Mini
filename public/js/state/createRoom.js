@@ -29,8 +29,9 @@ createRoom.prototype = {
 	},
 
   	create: function(){
-  		//loaderSearch.create();
-  		socket.emit('createNewRoom');
+  		var gameParams = {gameWidth: this.game.world.width, gameHeight: this.game.world.height}
+
+  		socket.emit('createNewRoom', gameParams);
 
   		socket.on('roomCreated', function(obj){			
 			USER_ROOM = obj.idRoom;
