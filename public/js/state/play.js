@@ -155,9 +155,12 @@ play.prototype = {
 	socketReception: function(){
 		// Si un joueur effectue une rotation
 		socket.on('player.rotation', function(data){
-			// On rotate le joueur qui a envoyé l'action
-			var tmpUser = _currentPlayState.getCurrentUserById(data.idUser);
-			tmpUser.setRotation(data.rotation);
+			// Si le joueurs qui a effectué l'action n'est poas le client
+			if(data.idUser != USER_ID){
+				// On rotate le joueur qui a envoyé l'action
+				var tmpUser = _currentPlayState.getCurrentUserById(data.idUser);
+				tmpUser.setRotation(data.rotation);
+			}
 		});
 
 		// Si un joueur se deplace

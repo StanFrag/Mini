@@ -228,6 +228,8 @@ module.exports = exports = function(io) {
 		var list = [];
 
 		for(var i = 0; i < nbEnnemies; i++){
+			console.log("H: ",globalParams.gameHeight);
+			console.log("W: ", globalParams.gameWidth);
 			var tmpX = Math.random() < 0.5 ? (-1 * (Math.random() * 50)) : globalParams.gameWidth + Math.random() * 50;
 			var tmpY = 1 + Math.random() * globalParams.gameHeight;
 
