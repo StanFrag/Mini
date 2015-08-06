@@ -6,7 +6,7 @@ User = function(game, pos, color, idUser){
 	this.user;
 
 	this.speed = 0;
-	this.ratioDecelerate = 5;
+	this.ratioDecelerate = 15;
 
 	this.idUser = idUser;
 
@@ -30,18 +30,27 @@ User.prototype = {
 	},
 
 	update: function(){
-		
-		if(this.speed > 0){
-			this.speed -= this.ratioDecelerate;
-		}else if(this.speed < 0){
-			this.speed += this.ratioDecelerate;
+		if(this.user.body.velocity.x < 0){
+			this.user.body.velocity.x += this.ratioDecelerate;
+		}else if(this.user.body.velocity.x > 0){
+			this.user.body.velocity.x -= this.ratioDecelerate;
 		}
 
-    	this.game.physics.arcade.velocityFromAngle(this.user.angle, this.speed, this.user.body.velocity);
+		if(this.user.body.velocity.y < 0){
+			this.user.body.velocity.y += this.ratioDecelerate;
+		}else if(this.user.body.velocity.y > 0){
+			this.user.body.velocity.y -= this.ratioDecelerate;
+		}
+		
 	},
 
 	turnAroundPointer: function(value){
 		this.game.physics.arcade.velocityFromAngle(this.user.angle - 90, value, this.user.body.velocity);
+	},
+	
+	move: function(pos){
+		this.user.body.velocity.x = pos.x;
+		this.user.body.velocity.y = pos.y;
 	},
 
 	followPointer: function(){

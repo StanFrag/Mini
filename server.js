@@ -10,9 +10,27 @@ var app = express();
 var server = require('http').createServer(app)
 var io = require('socket.io').listen(server);
 var device  = require('express-device');
+var Q  = require('q');
 
-require('./routes/socket.js')(io);
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+var ObjectId = Schema.ObjectId;
+var Factory = require('./routes/schemas.js');
 
+mongoose.connect('mongodb://localhost/One', function(err) {
+  if (err) { throw err; }
+});
+var db = mongoose.connection;
+
+var factory = new Factory(Schema,mongoose, Q);
+factory.createSchemas();
+// A decommenter seulement si on doit rajouter les données statics
+//factory.insertStaticData();
+
+// Socket
+require('./routes/socket.js')(io, factory, Q);
+
+// Serveur
 var runningPortNumber = process.env.PORT;
 
 app.configure(function(){

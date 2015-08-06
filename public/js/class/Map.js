@@ -1,11 +1,10 @@
-Map = function(game, template){
+Map = function(game, template, tileSize){
 	this.game = game;
 	mapTemplate = template;
 
-	sizeOfCube = this.game.world.width / mapTemplate[0].length;
+	sizeOfCube = tileSize;
 	originLigne = this.game.world.height;
 
-	this.textureRegistry = {};
 	this.elementsArray = [];
 
 	this.create();
@@ -41,7 +40,9 @@ Map.prototype = {
 
 	addBlock: function(currentLigne, currentColonne){
 
-		var color = '0x' + (Math.random()*0xFFFFFF<<0).toString(16);
+		//var color = '0x' + (Math.random()*0xFFFFFF<<0).toString(16);
+		var color = '0xbb2255';
+
 		var ligne = originLigne - (sizeOfCube * currentLigne) - sizeOfCube;
 		var colonne = sizeOfCube * currentColonne;
 
@@ -74,5 +75,9 @@ Map.prototype = {
 	    graphics.beginFill(color, 1);
 	    graphics.drawRect(0, 0, size, size);
 	    return graphics;
+	},
+
+	getMap: function(){
+		return this.elementsArray;
 	},
 }

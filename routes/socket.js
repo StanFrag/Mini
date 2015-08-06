@@ -1,4 +1,4 @@
-module.exports = exports = function(io) {
+module.exports = exports = function(io, factoryMongoose, Q) {
 
 	var roomCount = 0;
 	var roomArray = [];
@@ -10,6 +10,8 @@ module.exports = exports = function(io) {
 
 	var coefEnnemiesOnMap = 5;
 	var coefEnnemies = 10;
+
+	var mapSize = {max: 50, min: 30};
 
 	var globalParams = {gameWidth: null, gameHeight: null};
 
@@ -124,8 +126,6 @@ module.exports = exports = function(io) {
 			for(var i = 0; i < obj.players.length; i++){
 				// Si le players est bien le user ciblé
 				if(obj.players[i].idPlayer == socket.id){
-
-					console.log(obj.players[i].ready);
 					if(obj.players[i].ready == true){
 						obj.players[i].ready = false;
 					}else{
@@ -153,15 +153,29 @@ module.exports = exports = function(io) {
 
 			// La partie commence au lvl 1
 			obj.level = 1;
-			// Et on genere la map
-			obj.map = generateMap(obj.level);
-			obj.ennemiesInfo = generateEnnemies(obj.level);
 
-			// On push la room dans les room en game
-			roomPlayingArray.push(obj);
+			// Generation de la map selon le level de la partie
+			generateMap(obj.level).then(function(resultMap){
 
-			// On envoi au client la nouvelle room, que le jeu commence!
-			io.sockets.to(obj.idRoom).emit('receiveBeginGame', obj);
+				obj.map = resultMap;
+
+				// Generation des levels selon le level de la partie
+				generateEnnemies(obj.level).then(function(resultEnnemie){
+					obj.ennemiesInfo = resultEnnemie;
+
+					// On push la room dans les room en game
+					roomPlayingArray.push(obj);
+
+					// On envoi au client la nouvelle room, que le jeu commence!
+					io.sockets.to(obj.idRoom).emit('receiveBeginGame', obj);
+
+				}, function(err){
+					console.log(err);
+				})
+
+			}, function(err){
+				console.log(err);
+			})
 		});
 		
 /************************************************/
@@ -222,31 +236,75 @@ module.exports = exports = function(io) {
 
 	function generateEnnemies(lvl){
 
-		var maxOnMap = coefEnnemiesOnMap * lvl;
-		var nbEnnemies = coefEnnemies * lvl;
+		var deferred = Q.defer();
 
-		var list = [];
+		// On recupere les differents ennemies present dans la base
+		factoryMongoose.getEnnemies( { $where : "this.levelMin >= 1 " } )
+			.then(function(result){
 
-		for(var i = 0; i < nbEnnemies; i++){
-			console.log("H: ",globalParams.gameHeight);
-			console.log("W: ", globalParams.gameWidth);
-			var tmpX = Math.random() < 0.5 ? (-1 * (Math.random() * 50)) : globalParams.gameWidth + Math.random() * 50;
-			var tmpY = 1 + Math.random() * globalParams.gameHeight;
+				var maxOnMap = coefEnnemiesOnMap * lvl;
+				var nbEnnemies = coefEnnemies * lvl;
 
-			var tmp = {life: 5, speed: 10, x: tmpX, y: tmpY};
-			list.push(tmp);
-		}
+				var list = [];
 
-		var obj = {maxEnnemiesOnMap: maxOnMap, listEnnemies: list}
+				for(var i = 0; i < nbEnnemies; i++){
 
-		return obj;
+					var random = Math.floor(Math.random() * result.length);
+					var ennemie = result[random];
+
+					var tmpX = Math.random() < 0.5 ? (-1 * (Math.random() * 50)) : globalParams.gameWidth + Math.random() * 50;
+					var tmpY = 1 + Math.random() * globalParams.gameHeight;
+
+					var tmp = {
+						life: ennemie.life, 
+						speed: ennemie.speed, 
+						x: tmpX, 
+						y: tmpY
+					};
+
+					list.push(tmp);
+				}
+
+				var obj = {maxEnnemiesOnMap: maxOnMap, listEnnemies: list}
+
+				deferred.resolve(obj);
+
+			}, function(err){
+				deferred.reject("Erreur dans le recuperation des ennemies: ", err);
+			})
+
+			return deferred.promise;
+
 	}
 
 	// Genere une map selon le lvl de la partie
 	function generateMap(lvl){
 
-		// A FAIRE
-		return null;
+		var deferred = Q.defer();
+
+		var respawnPoint = 0;
+
+		var mapWidth = Math.floor(mapSize.min + Math.random() * mapSize.max);
+		var mapHeight = Math.floor(mapSize.min + Math.random() * mapSize.max);
+
+		var mapArray = [];
+
+		for(var i= 0; i < mapWidth; i++){
+
+			var tmpArray = [];
+
+			for(var u= 0; u < mapHeight; u++){
+				tmpArray.push(
+					Math.random() < 0.1 ? 1 : 0
+				);
+			}
+
+			mapArray.push(tmpArray);
+		}
+
+		deferred.resolve(mapArray);
+
+		return deferred.promise;
 	}
 
 	function checkIdOnRoomArray(id){

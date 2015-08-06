@@ -2,11 +2,14 @@ var play = function(game){
 	_currentPlayState = this;
 	this.room = null;
 
+	this.map = null;
+	this.tileSize = 20;
+
 	this.playersArray = [];
 
-	this.vitPlayers = 100;
-
+	this.vitPlayers = 150;
 	this.currentWeapon = {fireRate : 100, nextFire: 0, bulletOnMap: 200, speedBullet: 500};
+
 	this.countDead = 0;
 	this.ennemies = [];
 	this.bullets = null;
@@ -49,11 +52,38 @@ play.prototype = {
 	render: function(){
 		this.game.debug.text(currentGame.time.suggestedFps, 32, 32);
 		//this.Game.debug.text(currentGame.time.physicsElapsed, 32, 52);
+
+		for(var i = 0; i < this.playersArray.length; i++){
+			this.game.debug.body(this.playersArray[i].getSprite());
+		}
+
+		var dataMap = this.map.getMap();
+
+		for(var i = 0; i < dataMap.length; i++){
+			this.game.debug.body(dataMap[i]);
+		}
 	},
 
 	// Lancement de l'ensemble des fonctions de collisions 
 	detecteCollide: function(){
 		this.collideFromBullet();
+		this.collideFromMap();
+	},
+
+	collideFromMap: function(){
+		var currentUser = this.getCurrentUserById(USER_ID);
+
+		for(var i = 0; i < this.playersArray.length; i++){
+			this.game.physics.arcade.collide(this.playersArray[i].getSprite(), this.map.getMap(), function(user, wall){
+
+			});
+		}
+
+		for(var i = 0; i < this.ennemies.length; i++){
+			this.game.physics.arcade.collide(this.ennemies[i].getSprite(), this.map.getMap(), function(user, wall){
+
+			});
+		}
 	},
 
 	// Collision depuis une balle
@@ -61,6 +91,13 @@ play.prototype = {
 		
 		// Pour chaque bullet envoyé
 		this.bullets.forEachAlive(function(bullet){
+
+			_currentPlayState.game.physics.arcade.collide(bullet, _currentPlayState.map.getMap(), function(bullet, wall){
+
+				// On detruit la bullet
+				bullet.kill();
+			});
+
 			// Et pour chaque ennemie present sur la map
 			for(var i = 0; i < _currentPlayState.ennemies.length; i++){
 				// On verifie qu'une collision n'a pas lieu entre les deux entité
@@ -107,18 +144,22 @@ play.prototype = {
 		var client = this.getCurrentUserById(USER_ID);
 
 	    if (cursors.left.isDown){
-	    	client.turnAroundPointer(this.vitPlayers);
+	    	client.move({x: -this.vitPlayers, y:0});
+	    	//client.turnAroundPointer(this.vitPlayers);
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }else if (cursors.right.isDown){
-	    	client.turnAroundPointer(-this.vitPlayers);
+	    	client.move({x: this.vitPlayers, y:0});
+	    	//client.turnAroundPointer(-this.vitPlayers);
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }
 
 	    if(cursors.up.isDown){
-	    	client.setSpeed(this.vitPlayers);
+	    	client.move({x: 0, y:-this.vitPlayers});
+	    	//client.setSpeed(this.vitPlayers);
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }else if(cursors.down.isDown){
-	    	client.setSpeed(-this.vitPlayers);
+	    	client.move({x: 0, y:this.vitPlayers});
+	    	//client.setSpeed(-this.vitPlayers);
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
 	    }
 
@@ -232,6 +273,7 @@ play.prototype = {
 		/***************/
 		/****A FAIRE****/
 		/***************/
+		this.map = new Map(this.game, this.room.map, this.tileSize);
 	},
 
 	// Initiation des players dans le partie
