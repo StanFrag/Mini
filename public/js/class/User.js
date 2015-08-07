@@ -1,9 +1,10 @@
-User = function(game, pos, color, idUser){
+User = function(game, pos, color, idUser, tileSize){
 	this.game = game;
 
 	this.pos = pos;
 	this.color = color;
 	this.user;
+	this.tileSize = tileSize;
 
 	this.speed = 0;
 	this.ratioDecelerate = 15;
@@ -102,5 +103,13 @@ User.prototype = {
 	setPosition: function(pos){
 		this.user.x = pos.x;
 		this.user.y = pos.y;
+	},
+
+	getPositionOnMap: function(){
+
+		var i = Math.floor(this.user.x / this.tileSize);
+		var u = Math.floor(this.user.y / this.tileSize);
+
+		return {x: i, y:u};
 	}
 }

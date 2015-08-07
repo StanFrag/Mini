@@ -11,6 +11,7 @@ var server = require('http').createServer(app)
 var io = require('socket.io').listen(server);
 var device  = require('express-device');
 var Q  = require('q');
+var PF = require('pathfinding');
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
@@ -28,7 +29,7 @@ factory.createSchemas();
 //factory.insertStaticData();
 
 // Socket
-require('./routes/socket.js')(io, factory, Q);
+require('./routes/socket.js')(io, factory, Q, PF);
 
 // Serveur
 var runningPortNumber = process.env.PORT;

@@ -73,12 +73,14 @@ play.prototype = {
 	collideFromMap: function(){
 		var currentUser = this.getCurrentUserById(USER_ID);
 
+		// Les joueurs rentre en collision avec la map
 		for(var i = 0; i < this.playersArray.length; i++){
 			this.game.physics.arcade.collide(this.playersArray[i].getSprite(), this.map.getMap(), function(user, wall){
 
 			});
 		}
 
+		// Les ennemies rentre en collision avec la map
 		for(var i = 0; i < this.ennemies.length; i++){
 			this.game.physics.arcade.collide(this.ennemies[i].getSprite(), this.map.getMap(), function(user, wall){
 
@@ -117,8 +119,28 @@ play.prototype = {
 						// Si le nombre de mort n'est pas equivalent aux nombre max de monstre sur ce level
 						if(this.countDead != _currentPlayState.room.ennemiesInfo.listEnnemies.length){
 							// On instancie un nouvelle ennemie
-							var ennemie = new Ennemie(_currentPlayState.game, _currentPlayState.room.ennemiesInfo.listEnnemies[_currentPlayState.countDead]);
-	    					_currentPlayState.ennemies.push(ennemie);
+							var ennemie = new Ennemie(_currentPlayState.game, _currentPlayState.room.ennemiesInfo.listEnnemies[i], this.tileSize);
+							
+							// On va chercher la cible la plus proche de lui
+							var target = _currentPlayState.definedTarget(ennemie);
+
+							// On recupere les positions(TilePosition) du joueurs et des ennemis vis a vis de la map
+							var posEnnemie = null;
+							var pathEnnemie = ennemie.getPath();
+
+							if(pathEnnemie != null){
+								posEnnemie = {x: pathEnnemie[0][0], y: pathEnnemie[0][1]};
+							}else{
+								posEnnemie = ennemie.getPositionOnMap();
+							}
+							
+							var posUser = target.getPositionOnMap();
+
+							// Et on le push dans le tableau des ennemies
+					    	_currentPlayState.ennemies.push(ennemie);
+
+							// Puis on envoi au serveur ces positions
+							socket.emit('ennemie.searchTarget', { room: _currentPlayState.room.idRoom, user: posUser, ennemie: posEnnemie, idEnnemie: i});
 						}else{
 							// Sinon c'est une victoire vu que chaque monstre a bien ete detruit
 							_currentPlayState.winLevel();
@@ -194,6 +216,7 @@ play.prototype = {
 
 	// Sur la reception d'un action serveur
 	socketReception: function(){
+
 		// Si un joueur effectue une rotation
 		socket.on('player.rotation', function(data){
 			// Si le joueurs qui a effectué l'action n'est poas le client
@@ -229,6 +252,21 @@ play.prototype = {
 		        bullet.rotation = _currentPlayState.game.physics.arcade.moveToObject(bullet, data.target, _currentPlayState.currentWeapon.speedBullet);
 			}
 		});
+
+		// Si un joueur tire un coup de feu
+		socket.on('ennemie.searchTarget', function(data){
+			var path = data.pathEnnemie;
+			var i = data.idEnnemie;
+
+			var currentPath = _currentPlayState.ennemies[i].getPath();
+
+			if(currentPath == null){
+				_currentPlayState.ennemies[i].setPath(path);
+			}else if(currentPath[0][0] != path[0][0]){
+				_currentPlayState.ennemies[i].setPath(path);
+			}
+			
+		});
 	},
 
 
@@ -238,13 +276,23 @@ play.prototype = {
 
 		// Pour chaque ennemie present
 		for(var i = 0; i < this.ennemies.length; i++){
+
 			// On va chercher la cible la plus proche de lui
 			var target = this.definedTarget(this.ennemies[i]);
 
-			// Et marqué la cible a l'ennmie ciblé
-	    	this.ennemies[i].setTarget(target);
-	    	// Puis on lance l'update de l'ennemie
-	    	this.ennemies[i].update();
+			// On recupere les positions(TilePosition) du joueurs et des ennemis vis a vis de la map
+			var posEnnemie = null;
+			var pathEnnemie = this.ennemies[i].getPath();
+
+			if(pathEnnemie != null){
+				posEnnemie = {x: pathEnnemie[0][0], y: pathEnnemie[0][1]};
+			}else{
+				posEnnemie = this.ennemies[i].getPositionOnMap();
+			}
+			
+			var posUser = target.getPositionOnMap();
+
+			socket.emit('ennemie.searchTarget', { room: this.room.idRoom, user: posUser,ennemie:  posEnnemie, idEnnemie: i});
 		}
 	},
 
@@ -291,7 +339,7 @@ play.prototype = {
 			};
 
 			// Puis on crée le User
-			var user = new User(this.game, {x: 150 + (i * 60), y: this.world.centerY}, colorPlayer, this.room.players[i].idPlayer);
+			var user = new User(this.game, {x: 150 + (i * 60), y: this.world.centerY}, colorPlayer, this.room.players[i].idPlayer, this.tileSize);
 			// Et on le push dans le tableau des joueurs present
 			this.playersArray.push(user);
 		}
@@ -311,19 +359,34 @@ play.prototype = {
 
 	// Initialisaiton des premiers ennemies
 	initEnnemy: function(){
-		// Pour chaque ennemie present sur le level
+
+		// Pour chaque ennemie present simultanement sur la map
 		for (var i = 0; i < this.room.ennemiesInfo.maxEnnemiesOnMap; i++)
 	    {
 	    	// On crée un ennemie avec les informations recuperé depuis le serveur
-	    	var ennemie = new Ennemie(this.game, this.room.ennemiesInfo.listEnnemies[i]);
+	    	// Arg: game/attribus/tileSize
+	    	var ennemie = new Ennemie(this.game, this.room.ennemiesInfo.listEnnemies[i], this.tileSize);
 
-	    	// On chercher sa premiere cible
-	    	var target = this.definedTarget(ennemie);
-	    	// Puis on lui attribu cette cible
-	    	ennemie.setTarget(target);
+	    	// On va chercher la cible la plus proche de lui parmis les joueurs presents
+			var target = this.definedTarget(ennemie);
 
-	    	// Et on le push dans le tableau des ennemies
+			// On recupere les positions(TilePosition) du joueurs et des ennemis vis a vis de la map
+			var posEnnemie = null;
+			var pathEnnemie = ennemie.getPath();
+
+			if(pathEnnemie != null){
+				posEnnemie = {x: pathEnnemie[0][0], y: pathEnnemie[0][1]};
+			}else{
+				posEnnemie = ennemie.getPositionOnMap();
+			}
+			
+			var posUser = target.getPositionOnMap();
+
+			// Et on le push dans le tableau des ennemies
 	    	this.ennemies.push(ennemie);
+
+			// On envoi au serveur qu'un nouvelle ennemie a trouvé une cible
+			socket.emit('ennemie.searchTarget', { room: this.room.idRoom, user: posUser, ennemie: posEnnemie, idEnnemie: i});
 	    }
 	},
 
@@ -357,21 +420,29 @@ play.prototype = {
 	definedTarget: function(ennemie){
 		// target de base
 		var count = 5000;
+		// la target est null de base
 		var target = null;
 
+		// Pour chaque players present dans la partie
 		for (var i = 0; i < this.playersArray.length; i++)
 	    {
+	    	// On recupere la position du players et celle de l'ennemie ciblé
 	    	var posPlayer = this.playersArray[i].getPosition();
 	    	var posEnnemie = ennemie.getPosition();
 
+	    	// On calcul la distance entre les deux entités
 	    	var distance = this.game.math.distance(posPlayer.x, posPlayer.y, posEnnemie.x, posEnnemie.y);
 
+	    	// Si cette distance est plus courte que la derneire prise en compte on la remplace
 	    	if(distance < count){
+	    		// On remplace la count distance car celle ci est plus basse
 	    		count = distance;
-	    		target = posPlayer;
+	    		// On assigne le joueur dont la distance est la plus base ent ant que target
+	    		target = this.playersArray[i];
 	    	}
 	    }
 
+	    // On return cette target
 	    return target;
 	},
 

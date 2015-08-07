@@ -1,4 +1,4 @@
-module.exports = exports = function(io, factoryMongoose, Q) {
+module.exports = exports = function(io, factoryMongoose, Q, pathFinding) {
 
 	var roomCount = 0;
 	var roomArray = [];
@@ -12,6 +12,9 @@ module.exports = exports = function(io, factoryMongoose, Q) {
 	var coefEnnemies = 10;
 
 	var mapSize = {max: 50, min: 30};
+	var mapMatrix = null;
+	var mapGrid = null;
+	var mapFinder = null;
 
 	var globalParams = {gameWidth: null, gameHeight: null};
 
@@ -157,17 +160,27 @@ module.exports = exports = function(io, factoryMongoose, Q) {
 			// Generation de la map selon le level de la partie
 			generateMap(obj.level).then(function(resultMap){
 
+				// On attribue la map crée a l'objet qu'on enverra
 				obj.map = resultMap;
 
 				// Generation des levels selon le level de la partie
-				generateEnnemies(obj.level).then(function(resultEnnemie){
+				generateEnnemies(obj.level, obj.map).then(function(resultEnnemie){
+
+					// On attribue les ennemies crée a l'objet qu'on enverra
 					obj.ennemiesInfo = resultEnnemie;
 
-					// On push la room dans les room en game
-					roomPlayingArray.push(obj);
+					// On initialise le pathfinding des ennemies
+					initMapPathfinding(obj.map).then(function(result){
 
-					// On envoi au client la nouvelle room, que le jeu commence!
-					io.sockets.to(obj.idRoom).emit('receiveBeginGame', obj);
+						// On push la room dans les room en game
+						roomPlayingArray.push(obj);
+
+						// On envoi au client la nouvelle room, que le jeu commence!
+						io.sockets.to(obj.idRoom).emit('receiveBeginGame', obj);
+
+					}, function(err){
+						console.log(err);
+					})
 
 				}, function(err){
 					console.log(err);
@@ -192,6 +205,19 @@ module.exports = exports = function(io, factoryMongoose, Q) {
 
 		socket.on('player.fire', function(data){
 		    io.sockets.to(data.idRoom).emit('player.fire', {idUser: data.idUser , target: data.target});
+		});
+
+		socket.on('ennemie.searchTarget', function(data){
+			var grid = mapGrid.clone();
+
+			var posUser = data.user;
+			var posEnnemie = data.ennemie;
+			var id = data.idEnnemie;
+
+			var path = mapFinder.findPath(posEnnemie.x, posEnnemie.y, posUser.x, posUser.y, grid);
+
+			io.sockets.to(data.idRoom).emit('ennemie.searchTarget', {pathEnnemie: path, idEnnemie: id});
+			
 		});
 
 /************************************************/
@@ -234,7 +260,7 @@ module.exports = exports = function(io, factoryMongoose, Q) {
 /******************	FUNCTION	*****************/
 /************************************************/
 
-	function generateEnnemies(lvl){
+	function generateEnnemies(lvl, map){
 
 		var deferred = Q.defer();
 
@@ -242,31 +268,48 @@ module.exports = exports = function(io, factoryMongoose, Q) {
 		factoryMongoose.getEnnemies( { $where : "this.levelMin >= 1 " } )
 			.then(function(result){
 
+				// Le nombre maximum d'ennemie present en meme temps sur la map
 				var maxOnMap = coefEnnemiesOnMap * lvl;
+				// Le nombre d'ennemies du level
 				var nbEnnemies = coefEnnemies * lvl;
 
+				// Liste des ennemies que l'on va retourner
 				var list = [];
 
+				// Pour chaque ennemie du level
 				for(var i = 0; i < nbEnnemies; i++){
 
+					// On choisi un type d'ennemie aleatoire parmis ceux selectionné en base de données
 					var random = Math.floor(Math.random() * result.length);
 					var ennemie = result[random];
 
-					var tmpX = Math.random() < 0.5 ? (-1 * (Math.random() * 50)) : globalParams.gameWidth + Math.random() * 50;
-					var tmpY = 1 + Math.random() * globalParams.gameHeight;
+					// On crée une position aleatoire a cet ennemie pour son apparition
+					getRandomPositionOnMap(map).then(function(result){
 
-					var tmp = {
-						life: ennemie.life, 
-						speed: ennemie.speed, 
-						x: tmpX, 
-						y: tmpY
-					};
+						// Attribution des resultats d'apparitions
+						var tmpX = result.w;
+						var tmpY = result.h;
 
-					list.push(tmp);
+						// Creation des attribus de l'ennemie a envoyé a la partie
+						var tmp = {
+							life: ennemie.life, 
+							speed: ennemie.speed, 
+							x: tmpX, 
+							y: tmpY
+						};
+
+						// On push l'element crée
+						list.push(tmp);
+
+					}, function(err){
+						console.log(err);
+					});
 				}
 
+				// On crée un objet global des ennemies pour l'envoi a la partie
 				var obj = {maxEnnemiesOnMap: maxOnMap, listEnnemies: list}
 
+				// On resolva la promise a la fin du traitement
 				deferred.resolve(obj);
 
 			}, function(err){
@@ -275,6 +318,61 @@ module.exports = exports = function(io, factoryMongoose, Q) {
 
 			return deferred.promise;
 
+	}
+
+	function getRandomPositionOnMap(map){
+		var deferred = Q.defer();
+
+		// Tableau des values possibles
+		var valideValue = [];
+
+		// On traite l'ensemble de la map
+		for(var i= 0; i < map.length; i++){
+			for(var u = 0; u < map[i].length; u++){
+				// Si la premiere ligne ou  la derniere est selectionné sur la map
+				if(i == 0  || i == map.length){
+					// On push la value dans le tableau des variables viable
+					valideValue.push({w: i, h: u})
+				}else if(u == 0  || u == map[i].length){ // Pareil s'il s'agit de la premier eet derniere colonne
+					valideValue.push({w: i, h: u})
+				}
+			}
+		}
+		// On choisie une valeur aleatoire parmis le tableau des possibilités
+		var result = valideValue[Math.floor(Math.random() * valideValue.length)];
+
+		// On resolve la promise
+		deferred.resolve(result);
+
+		return deferred.promise;
+	}
+
+	function initMapPathfinding(mapArray){
+
+		var deferred = Q.defer();
+
+		var mapWidth = mapArray.length;
+		var mapHeight = mapArray[0].length;
+
+		mapGrid = new pathFinding.Grid(mapWidth, mapHeight);
+
+		for(var i= 0; i < mapWidth; i++){
+			for(var u= 0; u < mapHeight; u++){
+				if(mapArray[i][u] == 0){
+					mapGrid.setWalkableAt(0, 1, true);
+				}else{
+					mapGrid.setWalkableAt(0, 1, false);
+				}			
+			}
+		}
+
+		mapFinder = new pathFinding.AStarFinder({
+			allowDiagonal: true
+		});
+
+		deferred.resolve();
+		
+		return deferred.promise;
 	}
 
 	// Genere une map selon le lvl de la partie

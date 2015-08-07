@@ -1,14 +1,18 @@
-Ennemie = function(game, currentEnnemie){
+Ennemie = function(game, currentEnnemie, tileSize){
 	this.game = game;
 	this.infoEnnemie = currentEnnemie;
 	this.obj = null;
+	this.tileSize = tileSize;
 	this.target = null;
 	this.color = '#4169e1';
 
 	this.MAX_SPEED = 250; // pixels/second
     this.MIN_DISTANCE = 32; // pixels
+    this.path = null;
 
 	this.create();
+
+	this.counter=0;
 };
   
 Ennemie.prototype = {
@@ -17,7 +21,10 @@ Ennemie.prototype = {
 	},
 
   	create: function(){
-  		this.obj = this.game.add.sprite(this.infoEnnemie.x, this.infoEnnemie.y, this.createBlock({x:15,y:15}, this.color));
+  		var posX = this.infoEnnemie.x * this.tileSize;
+  		var posY = this.infoEnnemie.y * this.tileSize;
+
+  		this.obj = this.game.add.sprite(posX, posY, this.createBlock({x:15,y:15}, this.color));
 		this.obj.anchor.setTo(0.5, 0.5);
 
 		this.game.physics.arcade.enableBody(this.obj);
@@ -25,9 +32,12 @@ Ennemie.prototype = {
 		this.obj.body.collideWorldBounds = false;
 		this.obj.body.mass = 2000;
 	    this.obj.body.alive = false;
+
+	    this.game.time.events.loop(500, this.updateTimer, this);
 	},
 
 	update: function(){
+		/*
 		// Calculate distance to target
 	    var distance = this.game.math.distance(this.obj.x, this.obj.y, this.target.x, this.target.y);
 
@@ -42,6 +52,21 @@ Ennemie.prototype = {
 	    } else {
 	        this.obj.body.velocity.setTo(0, 0);
 	    }
+	    */	    
+	},
+
+	updateTimer: function(){
+
+		console.log("toto;");
+
+		if(this.path != null){
+			//this.obj.x = this.path[0][0] * this.tileSize;
+			//this.obj.y = this.path[0][1] * this.tileSize;
+
+			this.game.physics.arcade.moveToXY(this.obj, this.path[0][0] * this.tileSize, this.path[0][1] * this.tileSize, 1);
+		}
+
+		this.path.splice(0,1);
 	},
 
 	createBlock: function(size, color) {
@@ -85,5 +110,21 @@ Ennemie.prototype = {
 
 	setTarget: function(target){
 		this.target = target;
-	}
+	},
+
+	getPositionOnMap: function(){
+
+		var i = Math.floor(this.obj.x / this.tileSize);
+		var u = Math.floor(this.obj.y / this.tileSize);
+
+		return {x: i, y:u};
+	},
+
+	getPath: function(){
+		return this.path;
+	},
+
+	setPath: function(path){
+		this.path = path;
+	},
 }

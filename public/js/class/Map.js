@@ -6,6 +6,7 @@ Map = function(game, template, tileSize){
 	originLigne = this.game.world.height;
 
 	this.elementsArray = [];
+	this.organizedArray = [[]];
 
 	this.create();
 };
@@ -59,6 +60,9 @@ Map.prototype = {
 		);
 
 		this.game.physics.arcade.enableBody(tmpBlock);
+
+		tmpBlock.body.width = sizeOfCube;
+		tmpBlock.body.height = sizeOfCube;
 
 		tmpBlock.body.allowGravity = false;
 		tmpBlock.body.immovable = true;
