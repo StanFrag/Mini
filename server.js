@@ -18,7 +18,7 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var Factory = require('./routes/schemas.js');
 
-mongoose.connect('mongodb://localhost/One', function(err) {
+mongoose.connect('mongodb://localhost/Mini', function(err) {
   if (err) { throw err; }
 });
 var db = mongoose.connection;
@@ -33,6 +33,8 @@ require('./routes/socket.js')(io, factory, Q, PF);
 
 // Serveur
 var runningPortNumber = process.env.PORT;
+
+console.log("lancement");
 
 app.configure(function(){
 	// I need to access everything in '/public' directly

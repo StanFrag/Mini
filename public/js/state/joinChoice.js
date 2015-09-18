@@ -15,23 +15,21 @@ joinChoice.prototype = {
 	},
 
 	socketReception: function(){
-		socket.on('joinRoom', function(obj){
-			console.log(obj);
-			
+		socket.on('joinRoom', function(obj){			
 			USER_ROOM = obj.idRoom;
 			currentGame.state.start("Room", true, false, obj);
 		});
 
 		socket.on('errorReceive', function(err){
-			errorText.text = err.msg;
+			errorText.text = err;
 		});
 	},
 
 	createErrorHandler: function(){
 		errorText = this.game.add.text(
 			this.world.centerX, 
-			50, 
-			"", 
+			100, 
+			"test", 
 			{ font: "12pt Arial", fill: "#dd0d0d", align: "center", wordWrap: true, wordWrapWidth: (this.world.width / (2)) }
 		);
 
@@ -119,7 +117,6 @@ joinChoice.prototype = {
 	},
 
 	clickSendButton: function(item){
-		console.log(input.selectText()._value);
 		socket.emit('WantJoinLinkedRoom', input.selectText()._value);
 	},
 

@@ -12,8 +12,6 @@ menu.prototype = {
 	},
 
   	create: function(){
-  		console.log("Arrivé dans le menu");
-
   		this.addTitle();
   		this.addMenus();
 	},
@@ -23,6 +21,8 @@ menu.prototype = {
 	},
 
 	addMenus: function(){
+
+		console.log("totoooooooooo")
 		
 		// Mis en place de la couleur de fond
 		this.stage.backgroundColor = '#222';
@@ -32,28 +32,28 @@ menu.prototype = {
 		this.createTextClick(
 			'Créer une partie', 
 			{ pX: this.world.centerX, pY: this.world.centerY - 50 },
-			{ font: "40px Arial", fill: "#ff0044", align: "center" },
+			{ font: "40px Arial", fill: "#313131", align: "center" },
 			'CreateRoom'
 		);
 
 		this.createTextClick(
 			'Rejoindre une partie', 
 			{ pX: this.world.centerX, pY: this.world.centerY },
-			{ font: "40px Arial", fill: "#ff0044", align: "center" },
+			{ font: "40px Arial", fill: "#313131", align: "center" },
 			'JoinChoice'
 		);
 
 		this.createTextClick(
 			'Options', 
 			{ pX: this.world.centerX, pY: this.world.centerY + 50 },
-			{ font: "40px Arial", fill: "#ff0044", align: "center" },
+			{ font: "40px Arial", fill: "#313131", align: "center" },
 			'Option'
 		);
 
 		this.createTextClick(
 			'Règles', 
 			{ pX: this.world.centerX, pY: this.world.centerY + 100 },
-			{ font: "40px Arial", fill: "#ff0044", align: "center" },
+			{ font: "40px Arial", fill: "#313131", align: "center" },
 			'Rules'
 		);
         

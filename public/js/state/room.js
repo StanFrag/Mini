@@ -28,7 +28,6 @@ room.prototype = {
 
 	socketReception: function(){
 		socket.on('newRoomReceived', function(room){
-			console.log(room);
 			// On reatribu la room recu a la room de la page client
 			this.room = room;
 			// Puis on supprime les instances de l'ancienne room pour ensuite les recréer avec la new room
@@ -37,7 +36,6 @@ room.prototype = {
 		});
 
 		socket.on('receiveBeginGame', function(room){
-			console.log("Le jeu va commencer sur la room: ", room);
 			_current.game.state.start("Play", true, false, room);
 		});
 	},
@@ -113,8 +111,6 @@ room.prototype = {
 	createReadyButton: function(room, currentPlayer){
 
 		var readytext;
-
-		console.log("Le joueurs ",room.players[currentPlayer].idPlayer," est il pret: ",room.players[currentPlayer].ready);
 		
 		// Si le player est ready on crée un bouton vert
 		if(room.players[currentPlayer].ready){
@@ -137,8 +133,6 @@ room.prototype = {
 		// Pour chaque player de la liste
 		for(var i = 0; i < room.players.length; i++){
 
-			console.log("j'ai instancié un nouveau user: ", room.players[i]);
-
 			var text = this.game.add.text(50, 200 + (40 * i), (i + 1) + ". " + room.players[i].idPlayer, { font: "12pt Arial", fill: "#FFFFFF"});
 
 			this.createReadyButton(room, i);
@@ -156,7 +150,6 @@ room.prototype = {
 	},
 
 	changeReadyState: function(currentRoom){
-		console.log("je vais emit la room pr le state: ", currentRoom)
 		socket.emit('changeReadyState', this.currentRoom);
 	},
 
