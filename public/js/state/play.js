@@ -3,6 +3,7 @@ var play = function(game){
 	this.room = null;
 
 	this.map = null;
+	this.layer = null;
 	this.tileSize = 20;
 
 	this.playersArray = [];
@@ -27,7 +28,6 @@ play.prototype = {
 		this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
 	},
 
-	// Initialisation de l'ensemble des elements du jeu
   	create: function(){
   		this.initMap();
   		this.initPlayers();
@@ -116,7 +116,7 @@ play.prototype = {
 
 		// La map sera créer a l'aide du json recuperé
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
-		this.map = this.game.add.tilemap('map');
+		//this.map = this.game.add.tilemap('map', 16, 16);
 		//this.map = new Map(this.game, this.room.map, this.tileSize);
 	},
 

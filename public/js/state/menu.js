@@ -9,7 +9,7 @@ var menu = function(game){
 menu.prototype = {
 
 	preload: function(){
-		this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+		//this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
 	},
 
   	create: function(){
