@@ -17,6 +17,7 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var Factory = require('./routes/schemas.js');
 
+/*
 // Connection a la base de donnée
 mongoose.connect('mongodb://localhost/Mini', function(err) {
   if (err) { throw err; }
@@ -35,6 +36,7 @@ mapCollection.findOne({title: 'Test 1'}, function (err, map) {
   	console.log(map);
   }
 });
+*/
 
 // Socket
 require('./routes/socket.js')(io, Q, PF);
