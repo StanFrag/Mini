@@ -69,11 +69,7 @@ Map.prototype = {
 
 		this.elementsArray.push(tmpBlock);
 	},
-
-	generateFromTemplate: function(){
-
-	},
-
+	
 	createBlock: function(size, color) {
 		var graphics = this.game.add.graphics(0, 0);
 	    graphics.beginFill(color, 1);

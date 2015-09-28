@@ -21,6 +21,8 @@ window.onload=function(){
 
     var game = new Phaser.Game(paramsList.width, paramsList.height, Phaser.CANVAS, "game");
 
+    console.log("%cStarting application", "color:green; background:black");
+
     game.state.add("Boot",boot);                // Initialisation de l'application (scale/plateforme)
     game.state.add("Preload",preload);          // Preload des elements de Menu (images/sons)
     game.state.add("Menu",menu);                // Menu principal de l'application

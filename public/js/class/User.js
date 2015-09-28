@@ -1,16 +1,17 @@
-User = function(game, pos, color, idUser, tileSize){
+User = function(game, params, color, idUser, tileSize){
+	// Recuperation de l'instance de game
 	this.game = game;
 
-	this.pos = pos;
-	this.color = color;
+	// Récuperation des parametres du joueur
+	this.pos = params.pos;
+	this.color = params.color;
+	this.tileSize = params.tileSize;
+	this.idUser = params.id;
+
+	// Instanciation de l'object player
 	this.user;
-	this.tileSize = tileSize;
 
-	this.speed = 0;
-	this.ratioDecelerate = 15;
-
-	this.idUser = idUser;
-
+	// On lance le create
 	this.create();
 };
   
@@ -20,42 +21,31 @@ User.prototype = {
 	},
 
   	create: function(){
+  		// Creation du sprite
+  		// !!!! On modifiera ca pour faire des sprites avec des images ensuite
+  		this.user = this.game.add.sprite(this.pos.x, this.pos.y, this.createBlock({x:10,y:10}, this.color));
 
-  		this.user = this.game.add.sprite(this.pos.x, this.pos.y, this.createBlock({x:32,y:32}, this.color));
+  		// On place l'anchor du player au centre
 		this.user.anchor.setTo(0.5, 0.5);
 
+		// On Enable la physique du player
 		this.game.physics.arcade.enableBody(this.user);
 
-		this.user.body.collideWorldBounds = false;
+		// Collide il avec le world? Oui la
+		this.user.body.collideWorldBounds = true;
+
+		// Masse du player // je sais pas trop encore a quoi ca sert
 		this.user.body.mass = 40;
 	},
 
 	update: function(){
-		if(this.user.body.velocity.x < 0){
-			this.user.body.velocity.x += this.ratioDecelerate;
-		}else if(this.user.body.velocity.x > 0){
-			this.user.body.velocity.x -= this.ratioDecelerate;
-		}
-
-		if(this.user.body.velocity.y < 0){
-			this.user.body.velocity.y += this.ratioDecelerate;
-		}else if(this.user.body.velocity.y > 0){
-			this.user.body.velocity.y -= this.ratioDecelerate;
-		}
 		
 	},
 
-	turnAroundPointer: function(value){
-		this.game.physics.arcade.velocityFromAngle(this.user.angle - 90, value, this.user.body.velocity);
-	},
-	
-	move: function(pos){
-		this.user.body.velocity.x = pos.x;
-		this.user.body.velocity.y = pos.y;
-	},
-
-	followPointer: function(){
-		this.user.rotation = this.game.physics.arcade.angleToPointer(this.user);
+	move: function(position){
+		// On change les coordonnées du players avec celle recu par le serveur
+		this.user.body.x = this.user.x + position.x;
+		this.user.body.y = this.user.y + position.y;
 	},
 
 	createBlock: function(size, color) {
@@ -104,12 +94,4 @@ User.prototype = {
 		this.user.x = pos.x;
 		this.user.y = pos.y;
 	},
-
-	getPositionOnMap: function(){
-
-		var i = Math.floor(this.user.x / this.tileSize);
-		var u = Math.floor(this.user.y / this.tileSize);
-
-		return {x: i, y:u};
-	}
 }

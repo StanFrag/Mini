@@ -7,7 +7,7 @@ var Factory = function(Schema,mongoose, Q) {
     this.createSchemas = function() {
 
         // Création du schéma pour les ennemies
-		EnnemieSchema = new this.Schema({
+		EnnemieSchema = new this.mongoose.Schema({
 			title : String,
 			description : String,
 			levelMin: { type: Number, min: 1 },
@@ -21,7 +21,7 @@ var Factory = function(Schema,mongoose, Q) {
 		});
 
 		// Création du schéma pour les elements de map
-		mapElementSchema = new this.Schema({
+		mapElementSchema = new this.mongoose.Schema({
 			title : String,
 			description : String,
 			life: { type: Number, min: 1 },

@@ -1,14 +1,8 @@
-module.exports = exports = function(io, factoryMongoose, Q, pathFinding) {
+module.exports = exports = function(io, Q, pathFinding) {
 
 	var maxPlayers = 2;
 
-	var nbCubeFromWidth = 50;
-
-	var coefEnnemiesOnMap = 5;
-	var coefEnnemies = 10;
-
 	var mapSize = {max: 50, min: 30};
-	var mapMatrix = null;
 	var mapGrid = null;
 	var mapFinder = null;
 
@@ -18,9 +12,9 @@ module.exports = exports = function(io, factoryMongoose, Q, pathFinding) {
 	var Room = require('./class/Room.js');
 	var RoomFactory = new Room(maxPlayers);
 
+	// Le default block est le block vide de base
+	// Permet le deplacement sur lui; Aucune action possible
 	var defaultBlock = 0;
-
-	var globalParams = {gameWidth: null, gameHeight: null};
 
 	io.on('connection', function (socket) {
 
@@ -178,7 +172,7 @@ module.exports = exports = function(io, factoryMongoose, Q, pathFinding) {
 			var result = valideValue[Math.floor(Math.random() * valideValue.length)];
 
 			// On attribu la position initial au joueur ciblé
-			players[i].initialPos = {posX: result.w, posY: result.h};
+			players[i].initialPos = {posX: (result.w * tileSize) + tileSize / 2, posY: (result.h * tileSize) + tileSize / 2 };
 		}		
 
 		// On resolve la promise

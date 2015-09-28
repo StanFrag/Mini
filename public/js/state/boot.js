@@ -14,7 +14,6 @@ boot.prototype = {
 		this.stage.scale.setShowAll();
 		this.stage.scale.refresh();
 		*/
-		console.log("%cStarting application", "color:green; background:black");
 		
 		this.game.state.start("Preload");
 

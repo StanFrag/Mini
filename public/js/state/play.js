@@ -8,6 +8,8 @@ var play = function(game){
 	this.playersArray = [];
 
 	this.vitPlayers = 150;
+
+	var cursors = null;
 };
   
 play.prototype = {
@@ -21,6 +23,8 @@ play.prototype = {
 	preload: function(){
 		// Permet de rester en focus sur le jeu quand le joueur unfocus la page
 		this.game.stage.disableVisibilityChange = true;
+
+		this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
 	},
 
 	// Initialisation de l'ensemble des elements du jeu
@@ -58,7 +62,7 @@ play.prototype = {
 
 	// Fonction de win du level
 	winLevel: function(){
-		console.log("youhouuuuu le niveau est OVERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+		console.log("game over");
 	},
 
 	// Controle des raccourcies claviers
@@ -67,23 +71,19 @@ play.prototype = {
 		var client = this.getCurrentUserById(USER_ID);
 
 	    if (cursors.left.isDown){
-	    	client.move({x: -this.vitPlayers, y:0});
-	    	//client.turnAroundPointer(this.vitPlayers);
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
+	    	client.move({x: -5, y: 0})
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: -5, y: 0} });
 	    }else if (cursors.right.isDown){
-	    	client.move({x: this.vitPlayers, y:0});
-	    	//client.turnAroundPointer(-this.vitPlayers);
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
+	    	client.move({x: 5, y: 0})
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 5, y: 0} });
 	    }
 
 	    if(cursors.up.isDown){
-	    	client.move({x: 0, y:-this.vitPlayers});
-	    	//client.setSpeed(this.vitPlayers);
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
+	    	client.move({x: 0, y: 5})
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: 5} });
 	    }else if(cursors.down.isDown){
-	    	client.move({x: 0, y:this.vitPlayers});
-	    	//client.setSpeed(-this.vitPlayers);
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: client.getPosition() });
+	    	client.move({x: 0, y: -5})
+	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: -5} });
 	    }
 
 	},
@@ -96,7 +96,7 @@ play.prototype = {
 			if(data.idUser != USER_ID){
 				// On Move le player ciblé
 				var tmpUser = _currentPlayState.getCurrentUserById(data.idUser);
-				tmpUser.setPosition(data.position);
+				tmpUser.move(data.position);
 			}
 		});
 	},
@@ -116,7 +116,8 @@ play.prototype = {
 
 		// La map sera créer a l'aide du json recuperé
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
-		this.map = new Map(this.game, this.room.map, this.tileSize);
+		this.map = this.game.add.tilemap('map');
+		//this.map = new Map(this.game, this.room.map, this.tileSize);
 	},
 
 	// Initiation des players dans le partie
@@ -126,17 +127,23 @@ play.prototype = {
 		for(var i = 0; i < this.room.players.length; i++){
 
 			// On crée une couleur de base pour l'ensemble des players present
-			var colorPlayer = '#C2472C';
+			var colorPlayer = '#E60E0E';
 
 			// Si le client est le joueurs ciblé
 			if (this.room.players[i].idPlayer == USER_ID) {
 				// On change la couleur pour qu'il se demarque des autres players
-				colorPlayer = '#1DCE1F';
+				colorPlayer = '#16E00E';
 			};
 
-			console.log("x:",this.room.players[i].initialPos.posX," y: ",this.room.players[i].initialPos.posY);
 			// Puis on crée le User à la position donné par le serveur
-			var user = new User(this.game, {x: this.room.players[i].initialPos.posX, y: this.room.players[i].initialPos.posY}, colorPlayer, this.room.players[i].idPlayer, this.tileSize);
+			var user = new User(this.game, 
+				{
+					pos: 		{x: this.room.players[i].initialPos.posX, y: this.room.players[i].initialPos.posY}, 
+					color: 		colorPlayer, 
+					id: 		this.room.players[i].idPlayer, 
+					tileSize: 	this.tileSize
+				}
+			);
 
 			// Et on le push dans le tableau des joueurs present sur la partie
 			this.playersArray.push(user);

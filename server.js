@@ -12,24 +12,32 @@ var io = require('socket.io').listen(server);
 var device  = require('express-device');
 var Q  = require('q');
 var PF = require('pathfinding');
-
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var Factory = require('./routes/schemas.js');
 
+// Connection a la base de donnée
 mongoose.connect('mongodb://localhost/Mini', function(err) {
   if (err) { throw err; }
 });
+
+// recuperation de la connection
 var db = mongoose.connection;
 
-var factory = new Factory(Schema,mongoose, Q);
-factory.createSchemas();
-// A decommenter seulement si on doit rajouter les données statics
-//factory.insertStaticData();
+var mapCollection = db.collection('maps');
+
+//Lets try to Find a user
+mapCollection.findOne({title: 'Test 1'}, function (err, map) {
+  if (err) {
+    console.log(err);
+  } else {
+  	console.log(map);
+  }
+});
 
 // Socket
-require('./routes/socket.js')(io, factory, Q, PF);
+require('./routes/socket.js')(io, Q, PF);
 
 // Serveur
 var runningPortNumber = process.env.PORT;
