@@ -10,7 +10,7 @@ var play = function(game){
 
 	this.vitPlayers = 150;
 
-	var cursors = null;
+	this.cursors = null;
 };
   
 play.prototype = {
@@ -25,14 +25,17 @@ play.prototype = {
 		// Permet de rester en focus sur le jeu quand le joueur unfocus la page
 		this.game.stage.disableVisibilityChange = true;
 
-		//this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
-		this.game.load.json('map', 'localhost:3000/maps/map');
+		//this.game.load.tiledmap(CACHE_KEY('map', 'tiledmap'), HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+		//this.game.load.image(CACHE_KEY('map', 'tileset', 'Desert'), 'img/desert.png');
+
+		this.game.load.tilemap('desert', HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+    	this.game.load.image('tiles', 'img/desert.png');
 	},
 
   	create: function(){
+  		this.initGameParams();
   		this.initMap();
   		this.initPlayers();
-  		this.initGameParams();
 
   		this.socketReception();
 	},
@@ -71,18 +74,18 @@ play.prototype = {
 
 		var client = this.getCurrentUserById(USER_ID);
 
-	    if (cursors.left.isDown){
+	    if (this.cursors.left.isDown){
 	    	client.move({x: -5, y: 0})
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: -5, y: 0} });
-	    }else if (cursors.right.isDown){
+	    }else if (this.cursors.right.isDown){
 	    	client.move({x: 5, y: 0})
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 5, y: 0} });
 	    }
 
-	    if(cursors.up.isDown){
+	    if(this.cursors.up.isDown){
 	    	client.move({x: 0, y: 5})
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: 5} });
-	    }else if(cursors.down.isDown){
+	    }else if(this.cursors.down.isDown){
 	    	client.move({x: 0, y: -5})
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: -5} });
 	    }
@@ -119,7 +122,14 @@ play.prototype = {
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
 		//this.map = this.game.add.tilemap('map', 16, 16);
 		//this.map = new Map(this.game, this.room.map, this.tileSize);
-		var map = this.game.add.tiledmap('map');
+
+		this.map = this.game.add.tilemap('desert');
+
+	    //this.map.addTilesetImage('Desert', 'tiles');
+
+	    layer = this.map.createLayer('Ground');
+
+	    layer.resizeWorld();
 	},
 
 	// Initiation des players dans le partie
@@ -158,7 +168,7 @@ play.prototype = {
 		this.game.time.desiredFps = 60;
 
 		// Permettre les evenements claviers
-		cursors = this.game.input.keyboard.createCursorKeys();
+		this.cursors = this.game.input.keyboard.createCursorKeys();
 
 		//currentGame.renderer.clearBeforeRender = false;
 		currentGame.renderer.roundPixels = true;
