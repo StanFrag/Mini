@@ -5,6 +5,8 @@
 **************************************/
 var USER_ID;
 var USER_ROOM = "";
+var CACHE_KEY = null;
+var HOST = 'localhost:3000';
 
 // Connexion au serveur socket
 var socket = io.connect('http://127.0.0.1:3000/');
@@ -21,8 +23,6 @@ window.onload=function(){
 
     var game = new Phaser.Game(paramsList.width, paramsList.height, Phaser.CANVAS, "game");
 
-    console.log("%cStarting application", "color:green; background:black");
-
     game.state.add("Boot",boot);                // Initialisation de l'application (scale/plateforme)
     game.state.add("Preload",preload);          // Preload des elements de Menu (images/sons)
     game.state.add("Menu",menu);                // Menu principal de l'application
@@ -34,6 +34,8 @@ window.onload=function(){
     game.state.add("GameLoad",gameLoad);        // Load de l'ensemble des elements lié au jeu
     game.state.add("Play",play);                // Jeu
     game.state.add("GameOver",gameOver);        // Recapitulatif de fin de partie
+
+    console.log("%cStarting application", "color:green; background:black");
 
     socket.on('sendSocketId', function(id){
         USER_ID = id;

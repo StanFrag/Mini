@@ -25,7 +25,8 @@ play.prototype = {
 		// Permet de rester en focus sur le jeu quand le joueur unfocus la page
 		this.game.stage.disableVisibilityChange = true;
 
-		this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+		//this.game.load.tilemap('map', 'json/maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+		this.game.load.json('map', 'localhost:3000/maps/map');
 	},
 
   	create: function(){
@@ -118,6 +119,7 @@ play.prototype = {
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
 		//this.map = this.game.add.tilemap('map', 16, 16);
 		//this.map = new Map(this.game, this.room.map, this.tileSize);
+		var map = this.game.add.tiledmap('map');
 	},
 
 	// Initiation des players dans le partie

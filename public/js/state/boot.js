@@ -14,9 +14,16 @@ boot.prototype = {
 		this.stage.scale.setShowAll();
 		this.stage.scale.refresh();
 		*/
+
+		this.enablePlugins();
 		
 		this.game.state.start("Preload");
 
 		//this.game.canvas.id = 'canvas';
+	},
+
+	enablePlugins: function(){
+		this.game.add.plugin(Phaser.Plugin.Tiled);
+		CACHE_KEY = Phaser.Plugin.Tiled.utils.cacheKey;
 	}
 }

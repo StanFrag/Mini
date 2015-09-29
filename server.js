@@ -71,6 +71,14 @@ app.get("/", function(req, res){
 	res.render('index', {});
 });
 
+app.get('/maps/:file', function(req, res) {
+	var file = req.params.file
+	var path = './data/json/' + file;
+	var tmp = require(path);
+	
+	res.json(tmp);
+})
+
 server.listen(runningPortNumber || 3000);
 console.log("Server started at port", runningPortNumber || 3000);
 
