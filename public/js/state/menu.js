@@ -22,8 +22,6 @@ menu.prototype = {
 	},
 
 	addMenus: function(){
-
-		console.log("totoooooooooo")
 		
 		// Mis en place de la couleur de fond
 		this.stage.backgroundColor = '#222';

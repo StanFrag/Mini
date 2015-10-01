@@ -1,4 +1,4 @@
-module.exports = exports = function(io, Q, pathFinding) {
+module.exports = exports = function(io, Q, pathFinding, db) {
 
 	var maxPlayers = 2;
 
@@ -12,6 +12,10 @@ module.exports = exports = function(io, Q, pathFinding) {
 	var Room = require('./class/Room.js');
 	var RoomFactory = new Room(maxPlayers);
 
+	// Recuperation de la DB factory
+	var DataBase = require('./class/DataBase.js');
+	var DataBaseFactory = new DataBase(db);
+
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
 	var defaultBlock = 0;
@@ -24,6 +28,12 @@ module.exports = exports = function(io, Q, pathFinding) {
 
 		socket.on('createNewRoom', function(){
 			var tmp = RoomFactory.newRoom(socket.id);
+
+			// Get maps
+			var maps = DataBaseFactory.getMaps();
+
+			tmp.listMaps = maps;
+
 			socket.emit('roomCreated', tmp);
 		});
 
@@ -55,7 +65,19 @@ module.exports = exports = function(io, Q, pathFinding) {
 
 		// Un player previent qu'il vient d'arriver dans une room
 		socket.on('newPlayerJoinedRoom', function(room){
+			// On attribu le joueur recu a la room des socket
 			socket.join(room.idRoom);
+
+			// On renvoi aux clients de la room la new room
+			io.sockets.to(room.idRoom).emit('newRoomReceived', room);
+		});
+
+		// Un player previent qu'il vient d'arriver dans une room
+		socket.on('getMaps', function(){
+			// Get maps
+			var tmp = DataBaseFactory.getMaps();
+
+			// On renvoi aux clients de la room la new room
 			io.sockets.to(room.idRoom).emit('newRoomReceived', room);
 		});
 

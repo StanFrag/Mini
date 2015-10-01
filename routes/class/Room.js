@@ -23,8 +23,6 @@ Room.prototype.newRoom = function(id) {
 		return tmpObj;
 	}else{ // Sinon
 
-		console.log("lngt: ",this.roomArray.length);
-
 		// On verifie que l'id n'est pas presente dans l'array des rooms
 		var idResult = this.checkIdOnRoomArray(tmpId);
 		
@@ -197,8 +195,6 @@ Room.prototype.changeState = function(room, id){
 };
 
 Room.prototype.checkIdOnRoomArray = function(id){
-
-	console.log("je passe check");
 
 	// Pour chaque entité du tableau
 	for(var i=0; i < this.roomArray.length; i++){

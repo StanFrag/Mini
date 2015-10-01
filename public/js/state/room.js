@@ -16,13 +16,17 @@ room.prototype = {
 	},
 
   	create: function(){
+  		// On envoi au serveur qu'un nouveau player a rejoint la salle
   		this.sendNewPlayer();
 
+  		// On lance la reception des sockets
   		this.socketReception();
+  		// Et on crée les infos lié a la room
   		this.createInfoRoom();
 	},
 
 	sendNewPlayer: function(){
+		// On emit au serveur qu'un nouveau player a join la room
 		socket.emit('newPlayerJoinedRoom', this.room);
 	},
 
@@ -63,11 +67,26 @@ room.prototype = {
 		var inputButton = this.game.add.button(this.world.centerX, 50, bmd, function(){input.focus()}, this);
 		inputButton.anchor.set(1, 0.09);
 
+		this.createListMaps();
+
 		/*
 		var infoIdRoom = this.game.add.text(this.world.centerX, 50, "Id de la partie: " + this.room.idRoom, { font: "12pt Arial", fill: "#FFFFFF", align: "center" });
 		infoIdRoom.inputEnable = true;
 		infoIdRoom.anchor.set(0.5);
 		*/
+	},
+
+	createListMaps: function(){
+		for(var i = 0; i < this.room.listMaps.length; i++){
+			var tmp = this.game.add.text(this.world.centerX, this.world.height - 200 + (i * 5), room.listMaps[i]['title'], { font: "16pt Arial", fill: fillButton, align: "center" });
+			tmp.anchor.set(0.5);
+
+			tmp.events.onInputDown.add(this.chooseMap, {room: room});
+			tmp.events.onInputOver.add(this.over, this);
+			tmp.events.onInputOut.add(this.out, this);
+
+			this.elementArray.push(tmp);
+		}
 	},
 
 	createLancementButton: function(room){
@@ -163,6 +182,9 @@ room.prototype = {
 
 	lancementPartie: function(room) {
 		socket.emit('beginGame', this.room);
-		//currentGame.state.start(this.path);
+	},
+
+	chooseMap: function(room) {
+		socket.emit('activeMap', this.room);
 	},
 }

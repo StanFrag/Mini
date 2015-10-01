@@ -13,12 +13,11 @@ var device  = require('express-device');
 var Q  = require('q');
 var PF = require('pathfinding');
 var fs = require("fs");
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.ObjectId;
-var Factory = require('./routes/schemas.js');
 
-/*
+var mongoose = require('mongoose');
+var Schemas = require('./data/Schemas.js');
+var Models = require('./data/Models.js');
+
 // Connection a la base de donnée
 mongoose.connect('mongodb://localhost/Mini', function(err) {
   if (err) { throw err; }
@@ -27,25 +26,29 @@ mongoose.connect('mongodb://localhost/Mini', function(err) {
 // recuperation de la connection
 var db = mongoose.connection;
 
-var mapCollection = db.collection('maps');
+// SCHEMAS
+console.log("MongoDB - Schemas lancement.")
+var schemaFactory = new Schemas(mongoose, Q);
+var tmpSchemas = schemaFactory.getSchemas();
+console.log("MongoDB - Schemas initié.")
 
-//Lets try to Find a user
-mapCollection.findOne({title: 'Test 1'}, function (err, map) {
-  if (err) {
-    console.log(err);
-  } else {
-  	console.log(map);
-  }
+// MODELS
+console.log("MongoDB - Models lancement.")
+var modelFactory = new Models(mongoose, Q, tmpSchemas);
+var tmpModels = modelFactory.getModels();
+console.log("MongoDB - Models initié.")
+
+tmpModels.mapModel.find(null, function (err, comms) {
+  if (err) { throw err; }
+  // comms est un tableau de hash
+  console.log(comms);
 });
-*/
 
 // Socket
-require('./routes/socket.js')(io, Q, PF);
+require('./routes/socket.js')(io, Q, PF, db);
 
 // Serveur
 var runningPortNumber = process.env.PORT;
-
-console.log("lancement");
 
 app.configure(function(){
 	// I need to access everything in '/public' directly

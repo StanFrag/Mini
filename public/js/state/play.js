@@ -51,17 +51,7 @@ play.prototype = {
 	// Rendu des debugs
 	render: function(){
 		this.game.debug.text(currentGame.time.suggestedFps, 32, 32);
-		//this.Game.debug.text(currentGame.time.physicsElapsed, 32, 52);
-
-		for(var i = 0; i < this.playersArray.length; i++){
-			this.game.debug.body(this.playersArray[i].getSprite());
-		}
-
-		var dataMap = this.map.getMap();
-
-		for(var i = 0; i < dataMap.length; i++){
-			this.game.debug.body(dataMap[i]);
-		}
+		this.game.debug.text(currentGame.time.physicsElapsed, 32, 52);
 	},
 
 	// Fonction de win du level
@@ -125,7 +115,9 @@ play.prototype = {
 
 		this.map = this.game.add.tilemap('desert');
 
-	    //this.map.addTilesetImage('Desert', 'tiles');
+	    this.map.addTilesetImage('Desert', 'tiles');
+
+	    this.map.setCollisionBetween(1, 12);
 
 	    layer = this.map.createLayer('Ground');
 
