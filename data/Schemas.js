@@ -15,7 +15,8 @@ var Schemas = function(mongoose, Q) {
 			specialOptions: [],
 			specialAptitude: [],
 			dateCreation : { type : Date, default : Date.now },
-			dateModification : { type : Date, default : Date.now }
+			dateModification : { type : Date, default : Date.now },
+			pathJSON : String
 		});
 
 		return this.schemas;

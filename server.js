@@ -19,7 +19,7 @@ var Schemas = require('./data/Schemas.js');
 var Models = require('./data/Models.js');
 
 // Connection a la base de donnée
-mongoose.connect('mongodb://localhost/Mini', function(err) {
+mongoose.connect('mongodb://ujhgjs0txcun5ze:hRkZYpdk0NR659yITCDn@b6elb6t4b6sm3gf.mongodb.clvrcld.net:27017/b6elb6t4b6sm3gf', function(err) {
   if (err) { throw err; }
 });
 
@@ -38,14 +38,8 @@ var modelFactory = new Models(mongoose, Q, tmpSchemas);
 var tmpModels = modelFactory.getModels();
 console.log("MongoDB - Models initié.")
 
-tmpModels.mapModel.find(null, function (err, comms) {
-  if (err) { throw err; }
-  // comms est un tableau de hash
-  console.log(comms);
-});
-
 // Socket
-require('./routes/socket.js')(io, Q, PF, db);
+require('./routes/socket.js')(io, Q, PF, tmpModels);
 
 // Serveur
 var runningPortNumber = process.env.PORT;
@@ -68,7 +62,7 @@ app.use(function(req, res, next){
 	console.log({method:req.method, url: req.url, device: req.device});
 
 	// Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', 'http://mini.cleverapps.io/');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -104,7 +98,6 @@ app.get('/gui/:file', function(req, res) {
 	  if (err) {
 	    return console.log(err);
 	  }
-	  console.log("data: ",data);
 	  res.send(data);
 	});
 })

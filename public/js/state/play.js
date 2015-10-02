@@ -28,8 +28,8 @@ play.prototype = {
 		//this.game.load.tiledmap(CACHE_KEY('map', 'tiledmap'), HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
 		//this.game.load.image(CACHE_KEY('map', 'tileset', 'Desert'), 'img/desert.png');
 
-		this.game.load.tilemap('desert', HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
-    	this.game.load.image('tiles', 'img/desert.png');
+		this.game.load.tilemap('map', HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+    	this.game.load.image('tiles', 'img/tile.png');
 	},
 
   	create: function(){
@@ -61,9 +61,7 @@ play.prototype = {
 
 	// Controle des raccourcies claviers
 	KeyController: function(){
-
 		var client = this.getCurrentUserById(USER_ID);
-
 	    if (this.cursors.left.isDown){
 	    	client.move({x: -5, y: 0})
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: -5, y: 0} });
@@ -79,7 +77,6 @@ play.prototype = {
 	    	client.move({x: 0, y: -5})
 	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: -5} });
 	    }
-
 	},
 
 	// Sur la reception d'un action serveur
@@ -111,17 +108,7 @@ play.prototype = {
 		// La map sera créer a l'aide du json recuperé
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
 		//this.map = this.game.add.tilemap('map', 16, 16);
-		//this.map = new Map(this.game, this.room.map, this.tileSize);
-
-		this.map = this.game.add.tilemap('desert');
-
-	    this.map.addTilesetImage('Desert', 'tiles');
-
-	    this.map.setCollisionBetween(1, 12);
-
-	    layer = this.map.createLayer('Ground');
-
-	    layer.resizeWorld();
+		this.map = new Map(this.game, this.room.map, this.tileSize);
 	},
 
 	// Initiation des players dans le partie

@@ -1,4 +1,5 @@
 var option = function(game){
+
 };
   
 option.prototype = {
@@ -6,10 +7,13 @@ option.prototype = {
 	},
 
   	create: function(){
-  		EZGUI.Theme.load([ 'json/gui/test.json' ], function () {
-  			console.log('test');
-  			console.log(mainScreenJSON);
-			var mainScreen = EZGUI.create(mainScreenJSON, 'metalworks');	
+  		EZGUI.Theme.load(['json/gui/test.json'], function () {
+
+		    mainScreen = EZGUI.create(guiObj, 'metalworks');
+
+		    EZGUI.components.btn1.on('click', function (event) {
+                alert(EZGUI.components.myInput.text);
+            });
 		});
 	}
 }

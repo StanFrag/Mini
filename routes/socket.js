@@ -1,4 +1,4 @@
-module.exports = exports = function(io, Q, pathFinding, db) {
+module.exports = exports = function(io, Q, pathFinding, model) {
 
 	var maxPlayers = 2;
 
@@ -14,7 +14,7 @@ module.exports = exports = function(io, Q, pathFinding, db) {
 
 	// Recuperation de la DB factory
 	var DataBase = require('./class/DataBase.js');
-	var DataBaseFactory = new DataBase(db);
+	var DataBaseFactory = new DataBase(model, Q);
 
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
@@ -27,20 +27,19 @@ module.exports = exports = function(io, Q, pathFinding, db) {
 /************************************************/
 
 		socket.on('createNewRoom', function(){
-			var tmp = RoomFactory.newRoom(socket.id);
-
 			// Get maps
-			var maps = DataBaseFactory.getMaps();
-
-			tmp.listMaps = maps;
-
-			socket.emit('roomCreated', tmp);
+			DataBaseFactory.getMaps().then(function(result){
+				var tmp = RoomFactory.newRoom(socket.id);
+				tmp.listMaps = result;
+				socket.emit('roomCreated', tmp);
+			}, function(err){
+				socket.emit('errorReceive', err);
+			})			
 		});
 
 		// Un player envoi une requete pour rejoindre une room a l'aide d'un lien
 		socket.on('WantJoinLinkedRoom', function(link){
 			var tmp = RoomFactory.joinRoom(socket.id, link);
-			
 			if(tmp['status'] == 'error'){
 				// Aucune room trouvé, renvoi un message d'erreur
 				socket.emit('errorReceive', tmp['message']);
@@ -51,16 +50,13 @@ module.exports = exports = function(io, Q, pathFinding, db) {
 
 		// Un player envoi une requete pour rejoindre une room aleatoire
 		socket.on('WantJoinRandomRoom', function(){
-
 			var tmp = RoomFactory.joinRoom(socket.id);
-			
 			if(tmp['status'] == 'error'){
 				// Aucune room trouvé, renvoi un message d'erreur
 				socket.emit('errorReceive', tmp['message']);
 			}else{
 				socket.emit('joinRoom', tmp['message']);
 			}
-			
 		});
 
 		// Un player previent qu'il vient d'arriver dans une room

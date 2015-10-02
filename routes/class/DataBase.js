@@ -1,26 +1,20 @@
 // Constructor
-function DataBase(db) {
+function DataBase(model, Q) {
  	// always initialize all instance properties
-  	this.db = db;
+  	this.model = model;
+  	this.Q = Q;
 }
 // class methods
 DataBase.prototype.getMaps = function() {
 
-	var mapCollection = this.db.collection('maps');
+	var deferred = this.Q.defer();
 
-	//Lets try to Find a user
-	mapCollection.find(null, function (err, map) {
-		if (err) { throw err; }
-		  // On va parcourir le résultat et les afficher joliment
-		  var comm;
-		  for (var i = 0, l = map.length; i < l; i++) {
-		    comm = map[i];
-		    console.log('------------------------------');
-		    console.log('Titre : ' + comm.title);
-		    console.log('Descri : ' + comm.description);
-		    console.log('------------------------------');
-		  }
+	this.model.mapModel.find(null, function (err, result) {
+	  if (err) { deferred.reject(err); }
+	  deferred.resolve(result);
 	});
+
+	return deferred.promise;
 };
 
 

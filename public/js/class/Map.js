@@ -1,12 +1,6 @@
-Map = function(game, template, tileSize){
+Map = function(game){
 	this.game = game;
-	mapTemplate = template;
-
-	sizeOfCube = tileSize;
-	originLigne = this.game.world.height;
-
-	this.elementsArray = [];
-	this.organizedArray = [[]];
+	this.map = null;
 
 	this.create();
 };
@@ -17,67 +11,18 @@ Map.prototype = {
 	},
 
   	create: function(){
+  		this.map = this.game.add.tilemap('map');
 
-  		for(var ligne = 0; ligne < mapTemplate.length; ligne++){
-  			for(var colonne = 0; colonne < mapTemplate[0].length; colonne++){
+	    this.map.addTilesetImage('TileSet', 'tiles');
 
-  				var tmp = mapTemplate[ligne][colonne];
+	    this.map.setCollisionBetween(1, 12);
 
-  				switch(tmp) {
-				    case 0:
-				 		// Vide
-				        break;
-				    case 1:
-				        this.addBlock(ligne, colonne);
-				        break;
-				} 				
-  			}
-  		}
+	    layer = this.map.createLayer('Ground');
+
+	    layer.resizeWorld();
 	},
 
 	update: function(){
 
-	},
-
-	addBlock: function(currentLigne, currentColonne){
-
-		//var color = '0x' + (Math.random()*0xFFFFFF<<0).toString(16);
-		var color = '0xbb2255';
-
-		var ligne = originLigne - (sizeOfCube * currentLigne) - sizeOfCube;
-		var colonne = sizeOfCube * currentColonne;
-
-		var tmpBlock = this.game.add.sprite(
-			colonne, 
-			ligne
-		);
-
-		tmpBlock.addChild(
-			this.createBlock(
-				sizeOfCube, 
-				color
-			)
-		);
-
-		this.game.physics.arcade.enableBody(tmpBlock);
-
-		tmpBlock.body.width = sizeOfCube;
-		tmpBlock.body.height = sizeOfCube;
-
-		tmpBlock.body.allowGravity = false;
-		tmpBlock.body.immovable = true;
-
-		this.elementsArray.push(tmpBlock);
-	},
-	
-	createBlock: function(size, color) {
-		var graphics = this.game.add.graphics(0, 0);
-	    graphics.beginFill(color, 1);
-	    graphics.drawRect(0, 0, size, size);
-	    return graphics;
-	},
-
-	getMap: function(){
-		return this.elementsArray;
 	},
 }

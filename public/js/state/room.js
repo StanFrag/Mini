@@ -8,6 +8,7 @@ room.prototype = {
 
 	init: function(room){
 		this.room = room;
+		console.log(this.room);
 	},
 
 	preload: function(){
@@ -78,14 +79,13 @@ room.prototype = {
 
 	createListMaps: function(){
 		for(var i = 0; i < this.room.listMaps.length; i++){
-			var tmp = this.game.add.text(this.world.centerX, this.world.height - 200 + (i * 5), room.listMaps[i]['title'], { font: "16pt Arial", fill: fillButton, align: "center" });
+			
+			var tmp = this.game.add.text(this.world.centerX, (this.world.height / 2) + (i * 15), this.room.listMaps[i]['title'], { font: "16pt Arial", fill: '#FFFFFF', align: "center" });
 			tmp.anchor.set(0.5);
 
-			tmp.events.onInputDown.add(this.chooseMap, {room: room});
-			tmp.events.onInputOver.add(this.over, this);
-			tmp.events.onInputOut.add(this.out, this);
-
-			this.elementArray.push(tmp);
+			//tmp.events.onInputDown.add(this.chooseMap, {room: room});
+			//tmp.events.onInputOver.add(this.over, this);
+			//tmp.events.onInputOut.add(this.out, this);
 		}
 	},
 
