@@ -10,7 +10,7 @@ var play = function(game){
 
 	this.vitPlayers = 150;
 
-	this.cursors = null;
+	this.cursor = null;
 };
   
 play.prototype = {
@@ -33,16 +33,19 @@ play.prototype = {
 	},
 
   	create: function(){
+
   		this.initGameParams();
   		this.initMap();
   		this.initPlayers();
+
+  		//this.game.camera.follow(this.getCurrentUserById(USER_ID));
 
   		this.socketReception();
 	},
 
 	// Loop du jeu
 	update: function(){
-		//this.updateGameElements();
+		this.updateGameElements();
 		//this.clientFollowPointer();
 
 		this.KeyController();
@@ -62,21 +65,26 @@ play.prototype = {
 	// Controle des raccourcies claviers
 	KeyController: function(){
 		var client = this.getCurrentUserById(USER_ID);
-	    if (this.cursors.left.isDown){
-	    	client.move({x: -5, y: 0})
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: -5, y: 0} });
-	    }else if (this.cursors.right.isDown){
-	    	client.move({x: 5, y: 0})
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 5, y: 0} });
+
+	    if (this.cursor.left.isDown){
+	        client.setAngle(-1);
+	        this.game.camera.x -= 4;
+	    }else if (this.cursor.right.isDown){
+	        client.setAngle(1);
+	        this.game.camera.x += 4;
+	    } 
+
+	    if (this.cursor.up.isDown){
+	        //  The speed we'll travel at
+	        client.setCurrentSpeed(300);
+	    }else{
+	        if (client.getCurrentSpeed() > 0){
+	            client.setCurrentSpeed(-4);
+	        }
 	    }
 
-	    if(this.cursors.up.isDown){
-	    	client.move({x: 0, y: 5})
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: 5} });
-	    }else if(this.cursors.down.isDown){
-	    	client.move({x: 0, y: -5})
-	    	socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, pos: {x: 0, y: -5} });
-	    }
+	    var tmpPos = client.getPosition();
+	    this.game.world.camera.setPosition(tmpPos.x + (this.game.world.width / 2),tmpPos.y + (this.game.world.height / 2));
 	},
 
 	// Sur la reception d'un action serveur
@@ -92,12 +100,16 @@ play.prototype = {
 		});
 	},
 
+	updateGameElements: function(){
+		this.updateArray(this.playersArray);
+	},
+
 	// Function simple d'update d'Array
 	updateArray: function(currentArray){
 		for(var i = 0; i < currentArray.length; i++){
 			currentArray[i].update();
 		}
-	},
+	},	
 
 	// Fonction qui va créer la map recuperé depuis le serveur
 	initMap: function(){
@@ -126,17 +138,14 @@ play.prototype = {
 				colorPlayer = '#16E00E';
 			};
 
-			// Puis on crée le User à la position donné par le serveur
 			var user = new User(this.game, 
 				{
 					pos: 		{x: this.room.players[i].initialPos.posX, y: this.room.players[i].initialPos.posY}, 
 					color: 		colorPlayer, 
 					id: 		this.room.players[i].idPlayer, 
 					tileSize: 	this.tileSize
-				}
-			);
+				});
 
-			// Et on le push dans le tableau des joueurs present sur la partie
 			this.playersArray.push(user);
 		}
 	},
@@ -147,7 +156,7 @@ play.prototype = {
 		this.game.time.desiredFps = 60;
 
 		// Permettre les evenements claviers
-		this.cursors = this.game.input.keyboard.createCursorKeys();
+		this.cursor = this.game.input.keyboard.createCursorKeys();
 
 		//currentGame.renderer.clearBeforeRender = false;
 		currentGame.renderer.roundPixels = true;

@@ -8,6 +8,8 @@ User = function(game, params, color, idUser, tileSize){
 	this.tileSize = params.tileSize;
 	this.idUser = params.id;
 
+	this.currentSpeed = 0;
+
 	// Instanciation de l'object player
 	this.user;
 
@@ -23,7 +25,9 @@ User.prototype = {
   	create: function(){
   		// Creation du sprite
   		// !!!! On modifiera ca pour faire des sprites avec des images ensuite
-  		this.user = this.game.add.sprite(this.pos.x, this.pos.y, this.createBlock({x:10,y:10}, this.color));
+  		this.user = this.game.add.sprite(this.pos.x, this.pos.y, this.createBlock({x:15,y:15}, this.color));
+
+  		this.user.angle = 0;
 
   		// On place l'anchor du player au centre
 		this.user.anchor.setTo(0.5, 0.5);
@@ -36,26 +40,16 @@ User.prototype = {
 
 		// Masse du player // je sais pas trop encore a quoi ca sert
 		this.user.body.mass = 40;
+
+		this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
 	},
 
 	update: function(){
-		
-	},
-
-	move: function(position){
-		// On change les coordonnées du players avec celle recu par le serveur
-		this.user.body.x = this.user.x + position.x;
-		this.user.body.y = this.user.y + position.y;
-	},
-
-	createBlock: function(size, color) {
-		var name = size.x + '_' + color;
-
-		var bmd = this.game.add.bitmapData(size.x, size.y);
-		bmd.ctx.fillStyle = color;
-		bmd.ctx.fillRect(0,0, size.x, size.y);
-
-		return bmd;
+		if (this.currentSpeed > 0){
+	    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, this.currentSpeed, this.user.body.velocity);
+	    }else{
+	    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
+	    }
 	},
 
 	getSprite: function(){
@@ -70,6 +64,14 @@ User.prototype = {
 		this.idUser = tmpId;
 	},
 
+	getAngle: function(){
+		return this.user.angle;
+	},
+
+	setAngle: function(value){
+		this.user.angle += value;
+	},
+
 	getRotation: function(){
 		return this.user.rotation;
 	},
@@ -78,12 +80,12 @@ User.prototype = {
 		this.user.rotation = value;
 	},
 
-	getSpeed: function(){
-		return this.speed;
+	getCurrentSpeed: function(){
+		return this.currentSpeed;
 	},
 
-	setSpeed: function(value){
-		this.speed = value;
+	setCurrentSpeed: function(value){
+		this.currentSpeed = value;
 	},
 
 	getPosition: function(){
@@ -93,5 +95,15 @@ User.prototype = {
 	setPosition: function(pos){
 		this.user.x = pos.x;
 		this.user.y = pos.y;
+	},
+
+	createBlock: function(size, color) {
+		var name = size.x + '_' + color;
+
+		var bmd = this.game.add.bitmapData(size.x, size.y);
+		bmd.ctx.fillStyle = color;
+		bmd.ctx.fillRect(0,0, size.x, size.y);
+
+		return bmd;
 	},
 }
