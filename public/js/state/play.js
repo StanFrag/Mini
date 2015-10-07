@@ -127,6 +127,7 @@ play.prototype = {
 			// Si le joueurs qui a effectué l'action est le client
 			if(data.idUser == USER_ID){
 				console.log("Move venant d'ici");
+				console.log(data);
 
 				// Si le premier state est bien le state retourné par le serveur
 				if(data.stateId == _currentPlayState.stateArray[0].stateId){
@@ -148,9 +149,10 @@ play.prototype = {
 
 					_currentPlayState.stateArray.splice(0,1);
 				}	
-							
+
 			}else{
 				console.log("Move venant d'ailleur");
+				console.log(data);
 
 				var client = _currentPlayState.getCurrentUserById(data.idUser);
 
