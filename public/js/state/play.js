@@ -134,7 +134,7 @@ play.prototype = {
 
 					var client = _currentPlayState.getCurrentUserById(data.idUser);
 
-					client.setState(data.lastState);
+					client.setState(_currentPlayState.stateArray[0].lastState);
 
 					for(var i = 0; i < _currentPlayState.stateArray.length; i++){
 
