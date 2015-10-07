@@ -65,6 +65,7 @@ app.use(function(req, res, next){
 	console.log({method:req.method, url: req.url, device: req.device});
 
 	// Website you wish to allow to connect
+	//res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3200/');
     res.setHeader('Access-Control-Allow-Origin', 'http://mini.cleverapps.io/');
 
     // Request methods you wish to allow

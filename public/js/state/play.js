@@ -145,6 +145,7 @@ play.prototype = {
 				}				
 			}else{
 				var client = _currentPlayState.getCurrentUserById(data.idUser);
+				
 				console.log(data.speed, client)
 				if(data.speed != 0){
 					client.setCurrentSpeed(data.speed);
