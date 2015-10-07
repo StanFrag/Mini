@@ -77,7 +77,7 @@ play.prototype = {
 	        client.setAngle(-5);
 
 	        // Et on envoi au serveur le mouvement effectué
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: -5, stateId: id });
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: -5, stateId: id, lastState: client.getState() });
 
 	    }else if (this.cursor.right.isDown){
 
@@ -86,7 +86,7 @@ play.prototype = {
 	    	this.stateArray.push({speed: 0, angle: 5, stateId: id, lastState: client.getState()});
 	        client.setAngle(5);
 
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: 5, stateId: id });
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: 5, stateId: id, lastState: client.getState() });
 
 	    } 
 
@@ -98,7 +98,7 @@ play.prototype = {
 	        this.stateArray.push({speed: 300, angle:0, stateId: id, lastState: client.getState()});
 	        client.setCurrentSpeed(300);
 
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 300, angle:0, stateId: id });
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 300, angle:0, stateId: id, lastState: client.getState() });
 
 	    }else{
 	        if (client.getCurrentSpeed() > 0){
@@ -108,7 +108,7 @@ play.prototype = {
 	        	this.stateArray.push({speed: -4, angle:0, stateId: id, lastState: client.getState()});
 	            client.setCurrentSpeed(-4);
 
-	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: -4, angle:0, stateId: id });
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: -4, angle:0, stateId: id, lastState: client.getState() });
 
 	        }
 	    }
@@ -151,8 +151,6 @@ play.prototype = {
 				}	
 
 			}else{
-				console.log("Move venant d'ailleur");
-				console.log(data);
 
 				var client = _currentPlayState.getCurrentUserById(data.idUser);
 
