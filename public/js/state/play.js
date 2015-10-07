@@ -119,7 +119,7 @@ play.prototype = {
 
 	// Sur la reception d'un action serveur
 	socketReception: function(){
-		
+
 		// Si un joueur se deplace
 		socket.on('player.move', function(data){
 
@@ -166,7 +166,16 @@ play.prototype = {
 	},
 
 	updateGameElements: function(){
+		var client = _currentPlayState.getCurrentUserById(USER_ID)
+		var layer = this.map.getLayer();
+
+		this.game.physics.arcade.collide(client.getSprite(), layer, this.colisionLayer);
+
 		this.updateArray(this.playersArray);
+	},
+
+	colisionLayer: function(){
+		console.log("collision detecté");
 	},
 
 	// Function simple d'update d'Array

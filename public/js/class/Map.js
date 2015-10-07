@@ -1,6 +1,7 @@
 Map = function(game){
 	this.game = game;
 	this.map = null;
+	this.layer = null;
 
 	this.create();
 };
@@ -15,14 +16,20 @@ Map.prototype = {
 
 	    this.map.addTilesetImage('TileSet', 'tiles');
 
-	    this.map.setCollisionBetween(1, 12);
+	    this.map.setCollisionBetween(31, 32);
+	    this.map.setCollisionBetween(38, 40);
+	   	this.map.setCollisionBetween(46, 48);
 
-	    layer = this.map.createLayer('Ground');
+	    this.layer = this.map.createLayer('Ground');
 
-	    layer.resizeWorld();
+	    this.layer.resizeWorld();
 	},
 
 	update: function(){
 
+	},
+
+	getLayer: function(){
+		return this.layer;
 	},
 }

@@ -65,8 +65,8 @@ app.use(function(req, res, next){
 	console.log({method:req.method, url: req.url, device: req.device});
 
 	// Website you wish to allow to connect
-	//res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3600/');
-    res.setHeader('Access-Control-Allow-Origin', 'http://mini.cleverapps.io/');
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3600/');
+    //res.setHeader('Access-Control-Allow-Origin', 'http://mini.cleverapps.io/');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -106,6 +106,6 @@ app.get('/gui/:file', function(req, res) {
 	});
 })
 
-server.listen(runningPortNumber || 8080);
-console.log("Server started at port", runningPortNumber || 8080);
+server.listen(runningPortNumber || 3600);
+console.log("Server started at port", runningPortNumber || 3600);
 
