@@ -119,22 +119,19 @@ play.prototype = {
 
 	// Sur la reception d'un action serveur
 	socketReception: function(){
+		
 		// Si un joueur se deplace
 		socket.on('player.move', function(data){
 
-			console.log("Reception d'un move")
-
 			// Si le joueurs qui a effectué l'action est le client
 			if(data.idUser == USER_ID){
-				console.log("Move venant d'ici");
-				console.log(data);
 
 				// Si le premier state est bien le state retourné par le serveur
 				if(data.stateId == _currentPlayState.stateArray[0].stateId){
 
 					var client = _currentPlayState.getCurrentUserById(data.idUser);
 
-					client.setState(_currentPlayState.stateArray[0].lastState);
+					//client.setState(_currentPlayState.stateArray[0].lastState);
 
 					for(var i = 0; i < _currentPlayState.stateArray.length; i++){
 

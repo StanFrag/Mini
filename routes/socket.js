@@ -1,6 +1,6 @@
 module.exports = exports = function(io, Q, pathFinding, model) {
 
-	var maxPlayers = 2;
+	var maxPlayers = 4;
 
 	var mapSize = {max: 50, min: 30};
 	var mapGrid = null;
