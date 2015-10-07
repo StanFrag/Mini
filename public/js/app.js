@@ -11,7 +11,7 @@ var HOST = 'http://mini.cleverapps.io/';
 //var HOST = 'http://localhost:3000/';
 
 // Connexion au serveur socket
-var socket = io.connect('http://127.0.0.1:8080/');
+var socket = io.connect('http://mini.cleverapps.io:8080/');
     
 window.onload=function(){
 
