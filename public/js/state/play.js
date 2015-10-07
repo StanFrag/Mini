@@ -9,6 +9,7 @@ var play = function(game){
 	this.playersArray = [];
 
 	this.vitPlayers = 150;
+	this.stateArray = [];
 
 	this.cursor = null;
 };
@@ -67,35 +68,92 @@ play.prototype = {
 		var client = this.getCurrentUserById(USER_ID);
 
 	    if (this.cursor.left.isDown){
-	        client.setAngle(-1);
-	        this.game.camera.x -= 4;
+
+	    	var id = this.generateId();
+
+	        // Ensuite on place l'action effectué dans le tableau des states
+	        this.stateArray.push({speed: 0, angle: -5, stateId: id, lastState: client.getState()});
+	    	// On bouge le client qui vient d'effectuer l'action
+	        client.setAngle(-5);
+
+	        // Et on envoi au serveur le mouvement effectué
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: -5, stateId: id });
+
 	    }else if (this.cursor.right.isDown){
-	        client.setAngle(1);
-	        this.game.camera.x += 4;
+
+	    	var id = this.generateId();
+
+	    	this.stateArray.push({speed: 0, angle: 5, stateId: id, lastState: client.getState()});
+	        client.setAngle(5);
+
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: 5, stateId: id });
+
 	    } 
 
 	    if (this.cursor.up.isDown){
+
+	    	var id = this.generateId();
+
 	        //  The speed we'll travel at
+	        this.stateArray.push({speed: 300, angle:0, stateId: id, lastState: client.getState()});
 	        client.setCurrentSpeed(300);
+
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 300, angle:0, stateId: id });
+
 	    }else{
 	        if (client.getCurrentSpeed() > 0){
+
+	        	var id = this.generateId();
+
+	        	this.stateArray.push({speed: -4, angle:0, stateId: id, lastState: client.getState()});
 	            client.setCurrentSpeed(-4);
+
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: -4, angle:0, stateId: id });
+
 	        }
 	    }
 
 	    var tmpPos = client.getPosition();
-	    this.game.world.camera.setPosition(tmpPos.x + (this.game.world.width / 2),tmpPos.y + (this.game.world.height / 2));
+	    this.game.world.camera.focusOnXY(tmpPos.x,tmpPos.y);
 	},
 
 	// Sur la reception d'un action serveur
 	socketReception: function(){
 		// Si un joueur se deplace
 		socket.on('player.move', function(data){
-			// Si le joueurs qui a effectué l'action n'est poas le client
-			if(data.idUser != USER_ID){
-				// On Move le player ciblé
-				var tmpUser = _currentPlayState.getCurrentUserById(data.idUser);
-				tmpUser.move(data.position);
+			// Si le joueurs qui a effectué l'action est le client
+			if(data.idUser == USER_ID){
+				// Si le premier state est bien le state retourné par le serveur
+				if(data.stateId == _currentPlayState.stateArray[0].stateId){
+
+					var client = _currentPlayState.getCurrentUserById(data.idUser);
+
+					client.setState(data.lastState);
+
+					for(var i = 0; i < _currentPlayState.stateArray.length; i++){
+
+						if(_currentPlayState.stateArray[i].speed != 0){
+							client.setCurrentSpeed(_currentPlayState.stateArray[i].speed);
+						}
+
+						if(_currentPlayState.stateArray[i].angle != 0){
+							client.setAngle(_currentPlayState.stateArray[i].angle);
+						}
+					}
+
+					_currentPlayState.stateArray.splice(0,1);
+				}				
+			}else{
+				var client = _currentPlayState.getCurrentUserById(data.idUser);
+				console.log(data.speed, client)
+				if(data.speed != 0){
+					client.setCurrentSpeed(data.speed);
+				}
+
+				if(data.angle != 0){
+					client.setAngle(data.angle);
+				}
+				
 			}
 		});
 	},
@@ -168,5 +226,16 @@ play.prototype = {
 				return this.playersArray[i];
 			}
 		}
+	},
+
+	generateId : function(){
+
+	    var text = "";
+	    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+	    for(var i=0; i < 5; i++)
+	        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+	    return text;
 	},
 }

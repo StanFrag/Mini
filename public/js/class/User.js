@@ -97,6 +97,17 @@ User.prototype = {
 		this.user.y = pos.y;
 	},
 
+	getState: function(){
+		return { rotation: this.user.rotation, pos: {x: this.user.x, y: this.user.y} };
+	},
+
+	setState: function(data){
+		this.user.rotation = data.rotation;
+
+		this.user.x = data.pos.x;
+		this.user.y = data.pos.y;
+	},
+
 	createBlock: function(size, color) {
 		var name = size.x + '_' + color;
 

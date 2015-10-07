@@ -129,12 +129,8 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 /*******************	GAME	*****************/
 /************************************************/
 		
-		socket.on('player.rotation', function(data){
-		    io.sockets.to(data.idRoom).emit('player.rotation', {idUser: data.idUser , rotation: data.rotation});
-		});
-
 		socket.on('player.move', function(data){
-		    io.sockets.to(data.idRoom).emit('player.move', {idUser: data.idUser , position: data.pos});
+		    io.sockets.to(data.idRoom).emit('player.move', data);
 		});
 
 		socket.on('player.fire', function(data){
