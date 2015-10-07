@@ -21,7 +21,8 @@ var Models = require('./data/Models.js');
 // Connection a la base de donnée
 // mongodb://localhost/Mini pour LOCAL
 // mongodb://ujhgjs0txcun5ze:hRkZYpdk0NR659yITCDn@b6elb6t4b6sm3gf.mongodb.clvrcld.net:27017/b6elb6t4b6sm3gf pour CLEVER
-mongoose.connect('mongodb://localhost/Mini', function(err) {
+mongoose.connect('mongodb://ujhgjs0txcun5ze:hRkZYpdk0NR659yITCDn@b6elb6t4b6sm3gf.mongodb.clvrcld.net:27017/b6elb6t4b6sm3gf', function(err) {
+//mongoose.connect('mongodb://localhost/Mini', function(err) {
   if (err) { throw err; }
 });
 
