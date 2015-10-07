@@ -40,6 +40,7 @@ window.onload=function(){
     console.log("%cStarting application", "color:green; background:black");
 
     socket.on('sendSocketId', function(id){
+        console.log("id generé");
         USER_ID = id;
         game.state.start("Boot");
     });

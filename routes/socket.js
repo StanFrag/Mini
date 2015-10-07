@@ -22,6 +22,8 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 
 	io.on('connection', function (socket) {
 
+		console.log("New user connected");
+
 /************************************************/
 /*******************	MENU	*****************/
 /************************************************/
@@ -155,6 +157,7 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 /************************************************/
 
 		socket.on('generateSocketId', function(){
+			console.log("id generé");
 		    socket.emit('sendSocketId', socket.id);
 		});
 
