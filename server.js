@@ -105,6 +105,6 @@ app.get('/gui/:file', function(req, res) {
 	});
 })
 
-server.listen(runningPortNumber || 3000);
-console.log("Server started at port", runningPortNumber || 3000);
+server.listen(runningPortNumber || 8080);
+console.log("Server started at port", runningPortNumber || 8080);
 
