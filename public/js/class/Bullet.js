@@ -28,7 +28,7 @@ Bullet.prototype = {
 		this.detectOut();
 	},
 
-	run:function(target){
+	move:function(target){
 		this.game.physics.arcade.moveToObject(this.bullet, target, this.weapon.speedBullet);
 	},
 

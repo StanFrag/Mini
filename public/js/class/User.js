@@ -41,15 +41,24 @@ User.prototype = {
 		// Masse du player // je sais pas trop encore a quoi ca sert
 		this.user.body.mass = 40;
 
-		this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
+		//this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
 	},
 
 	update: function(){
-		if (this.currentSpeed > 0){
+		if (this.currentSpeed > 0.5){
 	    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, this.currentSpeed, this.user.body.velocity);
 	    }else{
 	    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
 	    }
+	},
+
+	followPointer: function(){
+		this.user.rotation = this.game.physics.arcade.angleToPointer(this.user);
+	},
+
+	turnAroundPointer: function(value){
+		this.user.body.velocity.x = value;
+		//this.game.physics.arcade.velocityFromAngle(this.user.angle - 90, value, this.user.body.velocity);
 	},
 
 	getSprite: function(){
@@ -86,6 +95,14 @@ User.prototype = {
 
 	setCurrentSpeed: function(value){
 		this.currentSpeed = value;
+	},
+
+	getCurrentAngle: function(){
+		return this.currentSpeed;
+	},
+
+	setCurrentAngle: function(value){
+		this.currentAngle = value;
 	},
 
 	getPosition: function(){

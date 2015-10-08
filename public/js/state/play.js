@@ -12,6 +12,10 @@ var play = function(game){
 	this.stateArray = [];
 
 	this.cursor = null;
+
+	this.currentWeapon = {fireRate : 100, nextFire: 0, bulletOnMap: 200, speedBullet: 500};
+	this.countDead = 0;
+	this.bullets = null;
 };
   
 play.prototype = {
@@ -38,8 +42,11 @@ play.prototype = {
   		this.initGameParams();
   		this.initMap();
   		this.initPlayers();
+  		this.initBullets();
 
-  		//this.game.camera.follow(this.getCurrentUserById(USER_ID));
+  		var tmpClient = this.getCurrentUserById(USER_ID);
+
+  		this.game.world.camera.focusOnXY(tmpClient.getPosition().x,tmpClient.getPosition().y);
 
   		this.socketReception();
 	},
@@ -47,9 +54,22 @@ play.prototype = {
 	// Loop du jeu
 	update: function(){
 		this.updateGameElements();
-		//this.clientFollowPointer();
+		this.clientFollowPointer();
 
 		this.KeyController();
+	},
+
+	// Rotation du player client selon le pointer
+	clientFollowPointer: function(){
+
+		// On recupere le client
+		var client = this.getCurrentUserById(USER_ID);
+
+		// On fait que le client suive sa souris
+		client.followPointer();
+
+		// On envoi les données receuilli au serveur
+		//socket.emit('player.rotation', { idUser: USER_ID, room: this.room.idRoom, rotation: client.getRotation() });
 	},
 
 	// Rendu des debugs
@@ -72,21 +92,23 @@ play.prototype = {
 	    	var id = this.generateId();
 
 	        // Ensuite on place l'action effectué dans le tableau des states
-	        this.stateArray.push({speed: 0, angle: -5, stateId: id, lastState: client.getState()});
+	        this.stateArray.push({speed: 0, angle: -150, stateId: id, lastState: client.getState()});
 	    	// On bouge le client qui vient d'effectuer l'action
-	        client.setAngle(-5);
+	        //client.setAngle(-5);
+	        client.turnAroundPointer(-150);
 
 	        // Et on envoi au serveur le mouvement effectué
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: -5, stateId: id, lastState: client.getState() });
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: -150, stateId: id, lastState: client.getState() });
 
 	    }else if (this.cursor.right.isDown){
 
 	    	var id = this.generateId();
 
-	    	this.stateArray.push({speed: 0, angle: 5, stateId: id, lastState: client.getState()});
-	        client.setAngle(5);
+	    	this.stateArray.push({speed: 0, angle: 150, stateId: id, lastState: client.getState()});
+	        //client.setAngle(5);
+	        client.turnAroundPointer(150);
 
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: 5, stateId: id, lastState: client.getState() });
+	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: 150, stateId: id, lastState: client.getState() });
 
 	    } 
 
@@ -101,20 +123,56 @@ play.prototype = {
 	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 300, angle:0, stateId: id, lastState: client.getState() });
 
 	    }else{
-	        if (client.getCurrentSpeed() > 0){
+        	var id = this.generateId();
 
-	        	var id = this.generateId();
+        	this.stateArray.push({speed: -150, angle:0, stateId: id, lastState: client.getState()});
+            client.setCurrentSpeed(-150);
 
-	        	this.stateArray.push({speed: -4, angle:0, stateId: id, lastState: client.getState()});
-	            client.setCurrentSpeed(-4);
+            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: -150, angle:0, stateId: id, lastState: client.getState() });
+	    }
 
-	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: -4, angle:0, stateId: id, lastState: client.getState() });
-
-	        }
+	    if (this.game.input.activePointer.isDown)
+	    {
+	    	var client = this.getCurrentUserById(USER_ID);
+	        this.fire({ x: this.game.input.x,  y: this.game.input.y }, client);
 	    }
 
 	    var tmpPos = client.getPosition();
-	    this.game.world.camera.focusOnXY(tmpPos.x,tmpPos.y);
+	    //this.game.world.camera.focusOnXY(tmpPos.x,tmpPos.y);
+	},
+
+	// Le joueur client tire
+	fire: function(target, user) {
+	    if (this.lastBulletShotAt === undefined) this.lastBulletShotAt = 0;
+	    if (this.game.time.now - this.lastBulletShotAt < this.currentWeapon.fireRate) return;
+	    this.lastBulletShotAt = this.game.time.now;
+
+	    // Get a dead bullet from the pool
+	    var bullet = this.bullets.getFirstDead();
+
+	    // If there aren't any bullets available then don't shoot
+	    if (bullet === null || bullet === undefined) return;
+
+	    // Revive the bullet
+	    // This makes the bullet "alive"
+	    bullet.revive();
+
+	    // Bullets should kill themselves when they leave the world.
+	    // Phaser takes care of this for me by setting this flag
+	    // but you can do it yourself by killing the bullet if
+	    // its x,y coordinates are outside of the world.
+	    bullet.checkWorldBounds = true;
+	    bullet.outOfBoundsKill = true;
+
+	    var tmp = user.getPosition();
+
+	    // Set the bullet position to the gun position.
+	    bullet.reset(tmp.x, tmp.y);
+	    bullet.rotation = user.getRotation();
+
+	    // Shoot it in the right direction
+	    bullet.body.velocity.x = Math.cos(bullet.rotation) * this.currentWeapon.speedBullet;
+	    bullet.body.velocity.y = Math.sin(bullet.rotation) * this.currentWeapon.speedBullet;
 	},
 
 	// Sur la reception d'un action serveur
@@ -140,7 +198,8 @@ play.prototype = {
 						}
 
 						if(_currentPlayState.stateArray[i].angle != 0){
-							client.setAngle(_currentPlayState.stateArray[i].angle);
+							//client.setAngle(_currentPlayState.stateArray[i].angle);
+							client.turnAroundPointer(_currentPlayState.stateArray[i].angle);
 						}
 					}
 
@@ -158,7 +217,8 @@ play.prototype = {
 				}
 
 				if(data.angle != 0){
-					client.setAngle(data.angle);
+					//client.setAngle(data.angle);
+					client.turnAroundPointer(data.angle);
 				}
 				
 			}
@@ -222,6 +282,32 @@ play.prototype = {
 
 			this.playersArray.push(user);
 		}
+	},
+
+	// Initiation du groupe des balles
+	initBullets: function(){
+		// Création du groupe
+		this.bullets = this.game.add.group();
+
+		// Parametres des balles crées
+	    this.bullets.enableBody = true;
+	    this.bullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+	    for (var i = 0; i < this.currentWeapon.bulletOnMap; i++) {
+	    	// On crée une balle avec les caracteristiques de l'arme utilisé
+	    	var bullet = new Bullet(this.game, this.currentWeapon, this.getCurrentUserById(USER_ID).getPosition(), {x:this.game.input.activePointer.x, y: this.game.input.activePointer.y });
+	    	// On la push dans le group
+	    	this.bullets.add(bullet.getSprite());
+	    };
+
+	    // Parametres des balles groupées
+	    this.bullets.setAll('anchor.x', 0.5);
+	    this.bullets.setAll('anchor.y', 0.5);
+	    this.bullets.setAll('outOfBoundsKill', true); // Si la balle sort du cadre du jeu, est detruite
+	    this.bullets.setAll('checkWorldBounds', true); // On check si la balle rebondie sur le mur
+	    this.bullets.setAll('alive', false); // On met la balle en dead a son initiation
+
+	    this.bullets.setAll('mass', 0.5); // On lui attribu une masse
 	},
 
 	// Initiation des parametres de la partie
