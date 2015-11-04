@@ -16,6 +16,10 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 	var DataBase = require('./class/DataBase.js');
 	var DataBaseFactory = new DataBase(model, Q);
 
+	var countArray = [];
+	var readyArray = [];
+	var intervalId = null;
+
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
 	var defaultBlock = 0;
@@ -108,6 +112,8 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 					// On envoi au client la nouvelle room, que le jeu commence!
 					io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
 
+					readyArray[room.idRoom] = {ready: 0, players: room.players.length};
+
 				}, function(err){
 					console.log(err);
 				})
@@ -132,11 +138,11 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 /************************************************/
 		
 		socket.on('player.move', function(data){
-		    io.sockets.to(data.idRoom).emit('player.move', data);
+		    io.sockets.to(data.room).emit('player.move', data);
 		});
 
 		socket.on('player.fire', function(data){
-		    io.sockets.to(data.idRoom).emit('player.fire', {idUser: data.idUser , target: data.target});
+		    io.sockets.to(data.room).emit('player.fire', {idUser: data.idUser , target: data.target});
 		});
 
 		socket.on('ennemie.searchTarget', function(data){
@@ -148,7 +154,7 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 
 			var path = mapFinder.findPath(posEnnemie.x, posEnnemie.y, posUser.x, posUser.y, grid);
 
-			io.sockets.to(data.idRoom).emit('ennemie.searchTarget', {pathEnnemie: path, idEnnemie: id});
+			io.sockets.to(data.room).emit('ennemie.searchTarget', {pathEnnemie: path, idEnnemie: id});
 			
 		});
 
@@ -161,11 +167,48 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 		    socket.emit('sendSocketId', socket.id);
 		});
 
+
+/************************************************/
+/***********	CONSTRUCTION MODE	*************/
+/************************************************/
+
+		socket.on('construction.ready', function(data){
+			readyArray[data.room].ready++;
+
+			if(readyArray[data.room].ready == readyArray[data.room].players){
+				countConstructionMode(data.room);
+			}
+
+		});
+
+		socket.on('construction.changeTile', function(data){
+			io.sockets.to(data.room).emit('construction.changeTile', data);
+		});
+
 	});
 
 /************************************************/
 /******************	FUNCTION	*****************/
 /************************************************/
+
+	function countConstructionMode(roomId){
+		countArray[roomId] = 30;
+		console.log("----------------1----------------");
+		intervalId = setInterval(bip, 1000, roomId);
+		setTimeout(action, countArray[roomId] * 1000, roomId);
+	}
+
+	function action(room){
+		console.log("----------------3----------------");
+	  	clearInterval(intervalId);
+	  	io.sockets.to(room).emit('construction.end', countArray[room]);
+	}
+
+	function bip(room){
+		console.log("----------------2----------------");
+	  	countArray[room] = countArray[room] - 1;
+	  	io.sockets.to(room).emit('construction.bip', countArray[room]);
+	}
 
 	function getRandomInitialPosition(map, players){
 

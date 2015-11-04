@@ -32,4 +32,8 @@ Map.prototype = {
 	getLayer: function(){
 		return this.layer;
 	},
+
+	getMap: function(){
+		return this.map;
+	},
 }

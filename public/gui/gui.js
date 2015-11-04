@@ -111,3 +111,32 @@ var guiObj = {
       }
     ]
 }
+
+var guiConstruction = {
+    id: 'main',
+    component: 'Window',
+    header: { id: 'ttl', skin: 'metalworks', position: { x: 0, y: 0 }, height: 40, text: 'Construction Panel' },
+    padding: 4,
+    position: { x: 0, y: 0 },
+    width: 300,
+    height: 170,
+    layout: [1, 3],
+    children: [
+	    {
+	        id: 'hlist1',
+	        component: 'List',
+	        position: 'center',
+	        width: 400,
+	        height: 160,
+	        layout: [4, null],
+	        children: [
+	            { id: 'sc1', component: 'Button', position: 'center', width: 90, height: 120 },
+	            { id: 'sc2', component: 'Button', position: 'center', width: 90, height: 120 },
+	            { id: 'sc3', component: 'Button', position: 'center', width: 90, height: 120 },
+	            { id: 'sc4', component: 'Button', position: 'center', width: 90, height: 120 },
+	            { id: 'sc5', component: 'Button', position: 'center', width: 90, height: 120 }
+	        ]
+	    },
+    ]
+}
+

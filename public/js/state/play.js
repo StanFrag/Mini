@@ -11,6 +11,15 @@ var play = function(game){
 	this.vitPlayers = 150;
 	this.stateArray = [];
 
+	this.gameMode = false;
+
+	this.constructionPicker = null;
+	this.constructionTimeText = null;
+	this.constructionTimeValue = 0;
+	this.constructionTimeEnd = "10";
+	this.constructionMarker = null;
+	this.constructionCurrentTile = 31;
+
 	this.cursor = null;
 
 	this.currentWeapon = {fireRate : 100, nextFire: 0, bulletOnMap: 200, speedBullet: 500};
@@ -38,23 +47,31 @@ play.prototype = {
 	},
 
   	create: function(){
-
+  		// Init les parametres du game
   		this.initGameParams();
+  		// Init la map du jeu
   		this.initMap();
+
   		this.initPlayers();
   		this.initBullets();
 
-  		var tmpClient = this.getCurrentUserById(USER_ID);
+  		this.socketReception();
 
+  		var tmpClient = this.getCurrentUserById(USER_ID);
   		this.game.world.camera.focusOnXY(tmpClient.getPosition().x,tmpClient.getPosition().y);
 
-  		this.socketReception();
+  		// Init du pre-mode permettant de modifier l'environnement
+  		this.initConstructionState();
 	},
 
 	// Loop du jeu
 	update: function(){
-		this.updateGameElements();
-		this.clientFollowPointer();
+		// Si le jeu n'est pas en mode construction
+		if(this.gameMode)
+		{
+			this.updateGameElements();
+			this.clientFollowPointer();
+		}
 
 		this.KeyController();
 	},
@@ -69,7 +86,7 @@ play.prototype = {
 		client.followPointer();
 
 		// On envoi les données receuilli au serveur
-		//socket.emit('player.rotation', { idUser: USER_ID, room: this.room.idRoom, rotation: client.getRotation() });
+		socket.emit('player.rotation', { idUser: USER_ID, room: this.room.idRoom, rotation: client.getRotation() });
 	},
 
 	// Rendu des debugs
@@ -85,60 +102,118 @@ play.prototype = {
 
 	// Controle des raccourcies claviers
 	KeyController: function(){
-		var client = this.getCurrentUserById(USER_ID);
+		if(this.gameMode){
+			var client = this.getCurrentUserById(USER_ID);
 
-	    if (this.cursor.left.isDown){
+		    if (this.cursor.right.isDown){
 
-	    	var id = this.generateId();
+		    	var id = this.generateId();
 
-	        // Ensuite on place l'action effectué dans le tableau des states
-	        this.stateArray.push({speed: 0, angle: -150, stateId: id, lastState: client.getState()});
-	    	// On bouge le client qui vient d'effectuer l'action
-	        //client.setAngle(-5);
-	        client.turnAroundPointer(-150);
+		    	this.stateArray.push({ y: 0, x: 150, stateId: id, lastState: client.getState() });
+		        //client.setAngle(5);
+		        client.moveX(150);
 
-	        // Et on envoi au serveur le mouvement effectué
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: -150, stateId: id, lastState: client.getState() });
+		        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x: 150, stateId: id, lastState: client.getState() });
 
-	    }else if (this.cursor.right.isDown){
+		        console.log("right")
+		    }else{
+	        	var id = this.generateId();
 
-	    	var id = this.generateId();
+	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
+	            client.moveX(0);
 
-	    	this.stateArray.push({speed: 0, angle: 150, stateId: id, lastState: client.getState()});
-	        //client.setAngle(5);
-	        client.turnAroundPointer(150);
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
+		    }
 
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 0, angle: 150, stateId: id, lastState: client.getState() });
+		    if (this.cursor.left.isDown){
 
-	    } 
+		    	var id = this.generateId();
 
-	    if (this.cursor.up.isDown){
+		    	this.stateArray.push({ y: 0, x: -150, stateId: id, lastState: client.getState() });
+		        //client.setAngle(5);
+		        client.moveX(-150);
 
-	    	var id = this.generateId();
+		        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x: -150, stateId: id, lastState: client.getState() });
 
-	        //  The speed we'll travel at
-	        this.stateArray.push({speed: 300, angle:0, stateId: id, lastState: client.getState()});
-	        client.setCurrentSpeed(300);
+		        console.log("left")
+		    }else{
+	        	var id = this.generateId();
 
-	        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: 300, angle:0, stateId: id, lastState: client.getState() });
+	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
+	            client.moveX(0);
 
-	    }else{
-        	var id = this.generateId();
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
+		    }
 
-        	this.stateArray.push({speed: -150, angle:0, stateId: id, lastState: client.getState()});
-            client.setCurrentSpeed(-150);
+		    if(this.cursor.up.isDown){
 
-            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, speed: -150, angle:0, stateId: id, lastState: client.getState() });
-	    }
+		    	var id = this.generateId();
 
-	    if (this.game.input.activePointer.isDown)
-	    {
-	    	var client = this.getCurrentUserById(USER_ID);
-	        this.fire({ x: this.game.input.x,  y: this.game.input.y }, client);
-	    }
+		        //  The speed we'll travel at
+		        this.stateArray.push({ y: 250, x: 0, stateId: id, lastState: client.getState() });
+		        client.moveY(250);
 
-	    var tmpPos = client.getPosition();
-	    //this.game.world.camera.focusOnXY(tmpPos.x,tmpPos.y);
+		        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 250, x:0, stateId: id, lastState: client.getState() });
+
+		        console.log("up")
+		    }else{
+	        	var id = this.generateId();
+
+	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
+	            client.moveY(0);
+
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
+		    }
+
+		    if (this.cursor.down.isDown){
+	        	var id = this.generateId();
+
+	        	this.stateArray.push({ y: -150, x:0, stateId: id, lastState: client.getState() });
+	            client.moveY(-150);
+
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: -150, x:0, stateId: id, lastState: client.getState() });
+
+	            console.log("down")
+		    }else{
+	        	var id = this.generateId();
+
+	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
+	            client.moveY(0);
+
+	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
+		    }
+
+		    if (this.game.input.activePointer.isDown)
+		    {
+		    	var client = this.getCurrentUserById(USER_ID);
+		        this.fire({ x: this.game.input.x,  y: this.game.input.y }, client);
+		    }
+
+		    var tmpPos = client.getPosition();
+		    this.game.world.camera.focusOnXY(tmpPos.x,tmpPos.y);
+		}else{
+
+			this.constructionMarker.x = this.layer.getTileX(this.game.input.activePointer.worldX) * 32;
+    		this.constructionMarker.y = this.layer.getTileY(this.game.input.activePointer.worldY) * 32;
+
+		    if (this.cursor.up.isDown){
+		        this.game.camera.y -= 4;
+		    }else if (this.cursor.down.isDown){
+		        this.game.camera.y += 4;
+		    }
+
+		    if (this.cursor.left.isDown){
+		        this.game.camera.x -= 4;
+		    }else if (this.cursor.right.isDown){
+		        this.game.camera.x += 4;
+		    }
+
+		    if (this.game.input.activePointer.isDown)
+		    {
+		    	socket.emit('construction.changeTile', { room: this.room.idRoom, tile: this.constructionCurrentTile, marker: { x: this.constructionMarker.x, y: this.constructionMarker.y } });
+		    }
+		}
+		
 	},
 
 	// Le joueur client tire
@@ -192,14 +267,12 @@ play.prototype = {
 					//client.setState(_currentPlayState.stateArray[0].lastState);
 
 					for(var i = 0; i < _currentPlayState.stateArray.length; i++){
-
-						if(_currentPlayState.stateArray[i].speed != 0){
-							client.setCurrentSpeed(_currentPlayState.stateArray[i].speed);
+						if(_currentPlayState.stateArray[i].x > 0){
+							client.moveX(_currentPlayState.stateArray[i].x);
 						}
 
-						if(_currentPlayState.stateArray[i].angle != 0){
-							//client.setAngle(_currentPlayState.stateArray[i].angle);
-							client.turnAroundPointer(_currentPlayState.stateArray[i].angle);
+						if(_currentPlayState.stateArray[i].y > 0){
+							client.moveY(_currentPlayState.stateArray[i].y);
 						}
 					}
 
@@ -212,30 +285,64 @@ play.prototype = {
 
 				client.setState(data.lastState);
 
-				if(data.speed != 0){
-					client.setCurrentSpeed(data.speed);
+				client.move({x: data.x, y: data.y});
+
+				if(data.stateArray[i].x > 0){
+					client.moveX(data.stateArray[i].x);
 				}
 
-				if(data.angle != 0){
-					//client.setAngle(data.angle);
-					client.turnAroundPointer(data.angle);
+				if(data.stateArray[i].y > 0){
+					client.moveY(data.stateArray[i].y);
 				}
-				
 			}
+		});
+
+		socket.on('construction.end', function(data){
+			_currentPlayState.gameMode = true;
+			_currentPlayState.constructionTimeText.destroy();
+			_currentPlayState.constructionMarker.destroy();
+		});
+
+		socket.on('construction.ready', function(data){
+			_currentPlayState.ready = data.ready;
+		});
+
+		socket.on('construction.bip', function(data){
+			_currentPlayState.constructionTimeText.text = data;
+			_currentPlayState.constructionTimeText.alpha = 0.1;
+
+			tweenText = _currentPlayState.game.add.tween(_currentPlayState.constructionTimeText);
+		    tweenText.to( { alpha: 1 }, 1000, "Linear", true);
+		});
+
+		socket.on('construction.changeTile', function(data){
+			var map = _currentPlayState.map.getMap();
+		    map.putTile(data.tile, _currentPlayState.layer.getTileX(data.marker.x), _currentPlayState.layer.getTileY(data.marker.y));
 		});
 	},
 
 	updateGameElements: function(){
-		var client = _currentPlayState.getCurrentUserById(USER_ID)
-		var layer = this.map.getLayer();
+		var client = _currentPlayState.getCurrentUserById(USER_ID);
 
-		this.game.physics.arcade.collide(client.getSprite(), layer, this.colisionLayer);
+		this.game.physics.arcade.collide(client.getSprite(), this.layer, this.colisionLayer);
+		this.game.physics.arcade.collide(this.bullets, this.layer, this.colisionBulletToTiles);
 
 		this.updateArray(this.playersArray);
 	},
 
 	colisionLayer: function(){
 		console.log("collision detecté");
+	},
+
+	colisionBulletToTiles: function(bullet, tile){
+		// Lors d'une collision entre une balle et une tuile dur
+		// On kill la balle
+		// On decremente la vie de la tuile - A FAIRE
+		
+		bullet.kill();
+
+		var map = _currentPlayState.map.getMap();
+		map.putTile(30, tile.x, tile.y);
 	},
 
 	// Function simple d'update d'Array
@@ -255,6 +362,7 @@ play.prototype = {
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
 		//this.map = this.game.add.tilemap('map', 16, 16);
 		this.map = new Map(this.game, this.room.map, this.tileSize);
+		this.layer = this.map.getLayer();
 	},
 
 	// Initiation des players dans le partie
@@ -308,6 +416,30 @@ play.prototype = {
 	    this.bullets.setAll('alive', false); // On met la balle en dead a son initiation
 
 	    this.bullets.setAll('mass', 0.5); // On lui attribu une masse
+	},
+
+	initConstructionState: function(){
+		this.constructionTimeText = this.add.text(this.game.width / 2, 100, "Construsez votre base!", 
+			{
+				font: "40px Arial",
+				fill: "#313131",
+				align: "center",
+				wordWrap: true,
+				wordWrapWidth: this.game.world.width
+			}
+		);
+
+		this.constructionTimeText.alpha = 1;
+	    this.constructionTimeText.anchor.set(0.5);
+	    this.constructionTimeText.fixedToCamera = true;
+
+	    this.constructionMarker = this.game.add.graphics();
+	    this.constructionMarker.lineStyle(2, 0x49C833, 1);
+	    this.constructionMarker.drawRect(0, 0, 32, 32);
+
+	    this.constructionPicker = new ConstructionPicker(this.game);
+
+	    socket.emit('construction.ready', { room: this.room.idRoom });
 	},
 
 	// Initiation des parametres de la partie

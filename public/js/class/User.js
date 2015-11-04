@@ -8,8 +8,6 @@ User = function(game, params, color, idUser, tileSize){
 	this.tileSize = params.tileSize;
 	this.idUser = params.id;
 
-	this.currentSpeed = 0;
-
 	// Instanciation de l'object player
 	this.user;
 
@@ -40,15 +38,19 @@ User.prototype = {
 
 		// Masse du player // je sais pas trop encore a quoi ca sert
 		this.user.body.mass = 40;
-
-		//this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
 	},
 
 	update: function(){
-		if (this.currentSpeed > 0.5){
-	    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, this.currentSpeed, this.user.body.velocity);
+		if (this.currentSpeedX > 0.5){
+	    	this.game.physics.arcade.velocityFromAngle(360, this.currentSpeedX, this.user.body.velocity);
+	    }else if(this.currentSpeedX < 0){
+	    	this.game.physics.arcade.velocityFromAngle(180, - this.currentSpeedX, this.user.body.velocity);
+	    }else if (this.currentSpeedY > 0.5){
+	    	this.game.physics.arcade.velocityFromAngle(270, this.currentSpeedY, this.user.body.velocity);
+	    }else if(this.currentSpeedY < 0){
+	    	this.game.physics.arcade.velocityFromAngle(90, - this.currentSpeedY, this.user.body.velocity);
 	    }else{
-	    	this.game.physics.arcade.velocityFromRotation(this.user.rotation, 0, this.user.body.velocity);
+	    	this.game.physics.arcade.velocityFromAngle(0, 0, this.user.body.velocity);
 	    }
 	},
 
@@ -56,9 +58,12 @@ User.prototype = {
 		this.user.rotation = this.game.physics.arcade.angleToPointer(this.user);
 	},
 
-	turnAroundPointer: function(value){
-		this.user.body.velocity.x = value;
-		//this.game.physics.arcade.velocityFromAngle(this.user.angle - 90, value, this.user.body.velocity);
+	moveX: function(value){
+		this.currentSpeedX = value;
+	},
+
+	moveY: function(value){
+		this.currentSpeedY = value;
 	},
 
 	getSprite: function(){
@@ -89,16 +94,16 @@ User.prototype = {
 		this.user.rotation = value;
 	},
 
-	getCurrentSpeed: function(){
-		return this.currentSpeed;
+	getCurrentSpeedX: function(){
+		return this.currentSpeedX;
 	},
 
-	setCurrentSpeed: function(value){
-		this.currentSpeed = value;
+	setCurrentSpeedX: function(value){
+		this.currentSpeedX = value;
 	},
 
 	getCurrentAngle: function(){
-		return this.currentSpeed;
+		return this.currentSpeedX;
 	},
 
 	setCurrentAngle: function(value){
