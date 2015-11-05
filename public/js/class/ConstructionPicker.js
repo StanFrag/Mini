@@ -5,11 +5,16 @@ var ConstructionPicker = function(game){
   
 ConstructionPicker.prototype = {
 	preload: function(){
+
 	},
 
   	create: function(){
+  		socket.emit('construction.getPicker', { idUser: USER_ID, room: this.room.idRoom, rotation: client.getRotation() });
+	},
 
-  		EZGUI.Theme.load(['json/gui/test.json'], function () {
+	createGui: function(){
+
+		EZGUI.Theme.load(['json/gui/test.json'], function () {
 
   			guiConstruction.width = _constructionState.width;
 
@@ -21,5 +26,13 @@ ConstructionPicker.prototype = {
 		   	main.y = gameHeight;
 		});
 		
+	},
+
+	update: function(){
+		this.socketReception();
+	},
+
+	socketReception: function(){
+
 	}
 }

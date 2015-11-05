@@ -185,7 +185,12 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 			io.sockets.to(data.room).emit('construction.changeTile', data);
 		});
 
-	});
+		socket.on('construction.getPicker', function(data){
+			console.log("Ca marche mec");
+			//io.sockets.to(data.room).emit('construction.changeTile', data);
+		});
+
+	}); // Fin de la reception d'une socket
 
 /************************************************/
 /******************	FUNCTION	*****************/

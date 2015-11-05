@@ -340,7 +340,7 @@ play.prototype = {
 		// On decremente la vie de la tuile - A FAIRE
 		
 		bullet.kill();
-
+		console.log('Tile',tile);
 		var map = _currentPlayState.map.getMap();
 		map.putTile(30, tile.x, tile.y);
 	},
