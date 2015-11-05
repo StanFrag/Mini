@@ -6,7 +6,7 @@
 var USER_ID;
 var USER_ROOM = "";
 var CACHE_KEY = null;
-var HOST = "http://" + window.location.hostname;
+var HOST = "http://" + window.location.hostname + "/";
 
 // Connexion au serveur socket
 var socket = io.connect(HOST);
