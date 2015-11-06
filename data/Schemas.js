@@ -18,7 +18,7 @@ var Schemas = function(mongoose, Q) {
 			pathJSON : String
 		});
 
-		this.schemas.tileSchema = new this.mongoose.Schema({
+		this.schemas.tilesSchema = new this.mongoose.Schema({
 			name : String,
 			description : String,
 			life: { type: Number, min: 1 },

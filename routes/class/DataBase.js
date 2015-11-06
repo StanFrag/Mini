@@ -17,6 +17,18 @@ DataBase.prototype.getMaps = function() {
 	return deferred.promise;
 };
 
+DataBase.prototype.getConstructionTiles = function() {
+
+	var deferred = this.Q.defer();
+
+	this.model.tilesModel.find(null, function (err, result) {
+	  if (err) { deferred.reject(err); }
+	  deferred.resolve(result);
+	});
+
+	return deferred.promise;
+};
+
 
 // export the class
 module.exports = DataBase;

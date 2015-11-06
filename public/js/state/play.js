@@ -44,6 +44,7 @@ play.prototype = {
 
 		this.game.load.tilemap('map', HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
     	this.game.load.image('tiles', 'img/tile.png');
+    	this.game.load.spritesheet('constructionTiles', 'img/tile.png', 32, 32, 50, 1, 1);
 	},
 
   	create: function(){
@@ -72,6 +73,9 @@ play.prototype = {
 			this.updateGameElements();
 			this.clientFollowPointer();
 		}
+
+		// Update du construction picker pour reception des sockets dans la classe
+		this.constructionPicker.update();
 
 		this.KeyController();
 	},

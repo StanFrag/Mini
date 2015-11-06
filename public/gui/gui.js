@@ -129,13 +129,7 @@ var guiConstruction = {
 	        width: 400,
 	        height: 160,
 	        layout: [4, null],
-	        children: [
-	            { id: 'sc1', component: 'Button', position: 'center', width: 90, height: 120 },
-	            { id: 'sc2', component: 'Button', position: 'center', width: 90, height: 120 },
-	            { id: 'sc3', component: 'Button', position: 'center', width: 90, height: 120 },
-	            { id: 'sc4', component: 'Button', position: 'center', width: 90, height: 120 },
-	            { id: 'sc5', component: 'Button', position: 'center', width: 90, height: 120 }
-	        ]
+	        children: []
 	    },
     ]
 }

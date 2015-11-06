@@ -18,7 +18,7 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 
 	var countArray = [];
 	var readyArray = [];
-	var intervalId = null;
+	var intervalIdArray = [];
 
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
@@ -185,9 +185,14 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 			io.sockets.to(data.room).emit('construction.changeTile', data);
 		});
 
-		socket.on('construction.getPicker', function(data){
-			console.log("Ca marche mec");
-			//io.sockets.to(data.room).emit('construction.changeTile', data);
+		socket.on('construction.getPicker', function(){
+			// Get construction tiles
+			DataBaseFactory.getConstructionTiles().then(function(result){
+				socket.emit('construction.getPicker', result);
+			}, function(err){
+				socket.emit('errorReceive', err);
+			})
+			
 		});
 
 	}); // Fin de la reception d'une socket
@@ -196,16 +201,17 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 /******************	FUNCTION	*****************/
 /************************************************/
 
-	function countConstructionMode(roomId){
-		countArray[roomId] = 30;
+	function countConstructionMode(room){
+		countArray[room] = 30;
 		console.log("----------------1----------------");
-		intervalId = setInterval(bip, 1000, roomId);
-		setTimeout(action, countArray[roomId] * 1000, roomId);
+
+		intervalIdArray[room] = setInterval(bip, 1000, room);
+		setTimeout(action, countArray[room] * 1000, room);
 	}
 
 	function action(room){
 		console.log("----------------3----------------");
-	  	clearInterval(intervalId);
+	  	clearInterval(intervalIdArray[room]);
 	  	io.sockets.to(room).emit('construction.end', countArray[room]);
 	}
 
