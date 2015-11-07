@@ -23,6 +23,8 @@ Map.prototype = {
 	    this.layer = this.map.createLayer('Ground');
 
 	    this.layer.resizeWorld();
+
+	    console.log(this.map.TILED_JSON);
 	},
 
 	update: function(){

@@ -8,7 +8,7 @@
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app)
-var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(server, { 'destroy buffer size': Infinity });
 var device  = require('express-device');
 var Q  = require('q');
 var PF = require('pathfinding');
@@ -42,7 +42,7 @@ var tmpModels = modelFactory.getModels();
 console.log("MongoDB - Models initié.")
 
 // Socket
-require('./routes/socket.js')(io, Q, PF, tmpModels);
+require('./routes/socket.js')(io, Q, PF, fs, tmpModels);
 
 // Serveur
 var runningPortNumber = process.env.PORT;
@@ -65,8 +65,8 @@ app.use(function(req, res, next){
 	console.log({method:req.method, url: req.url, device: req.device});
 
 	// Website you wish to allow to connect
-	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3900/');
-    //res.setHeader('Access-Control-Allow-Origin', 'http://mini.cleverapps.io/');
+	//res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200/');
+    res.setHeader('Access-Control-Allow-Origin', 'http://mini.cleverapps.io/');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -106,5 +106,5 @@ app.get('/gui/:file', function(req, res) {
 	});
 })
 
-server.listen(runningPortNumber || 3900);
+server.listen(runningPortNumber || 3000);
 

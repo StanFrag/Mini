@@ -16,7 +16,7 @@ var tmpSchemas = schemaFactory.getSchemas();
 // MODELS
 var modelFactory = new Models(mongoose, Q, tmpSchemas);
 var tmpModels = modelFactory.getModels();
- 
+
 // On crée une instance du Model
 var obj = new tmpModels.tilesModel({ name : 'cactus' });
 

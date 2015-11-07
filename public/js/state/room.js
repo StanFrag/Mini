@@ -8,7 +8,6 @@ room.prototype = {
 
 	init: function(room){
 		this.room = room;
-		console.log(this.room);
 	},
 
 	preload: function(){

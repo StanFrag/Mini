@@ -39,10 +39,7 @@ play.prototype = {
 		// Permet de rester en focus sur le jeu quand le joueur unfocus la page
 		this.game.stage.disableVisibilityChange = true;
 
-		//this.game.load.tiledmap(CACHE_KEY('map', 'tiledmap'), HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
-		//this.game.load.image(CACHE_KEY('map', 'tileset', 'Desert'), 'img/desert.png');
-
-		this.game.load.tilemap('map', HOST + 'maps/map.json', null, Phaser.Tilemap.TILED_JSON);
+		this.game.load.tilemap('map', HOST + 'maps/map_level_'+ this.room.level +'.json', null, Phaser.Tilemap.TILED_JSON);
     	this.game.load.image('tiles', 'img/tile.png');
     	this.game.load.spritesheet('constructionTiles', 'img/tile.png', 32, 32, 50, 1, 1);
 	},
@@ -214,7 +211,7 @@ play.prototype = {
 
 		    if (this.game.input.activePointer.isDown)
 		    {
-		    	socket.emit('construction.changeTile', { room: this.room.idRoom, tile: this.constructionCurrentTile, marker: { x: this.constructionMarker.x, y: this.constructionMarker.y } });
+		    	socket.emit('construction.changeTile', { room: this.room.idRoom, tile: this.constructionPicker.getCurrentTile(), marker: { x: this.constructionMarker.x, y: this.constructionMarker.y } });
 		    }
 		}
 		
@@ -303,6 +300,7 @@ play.prototype = {
 
 		socket.on('construction.end', function(data){
 			_currentPlayState.gameMode = true;
+			_currentPlayState.constructionPicker.hide();
 			_currentPlayState.constructionTimeText.destroy();
 			_currentPlayState.constructionMarker.destroy();
 		});
@@ -365,7 +363,7 @@ play.prototype = {
 		// La map sera créer a l'aide du json recuperé
 		// Elle ira chercher les sprites pour et créera la map dynamiquement
 		//this.map = this.game.add.tilemap('map', 16, 16);
-		this.map = new Map(this.game, this.room.map, this.tileSize);
+		this.map = new Map(this.game);
 		this.layer = this.map.getLayer();
 	},
 

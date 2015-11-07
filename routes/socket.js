@@ -1,4 +1,4 @@
-module.exports = exports = function(io, Q, pathFinding, model) {
+module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 	var maxPlayers = 4;
 
@@ -6,7 +6,7 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 	var mapGrid = null;
 	var mapFinder = null;
 
-	var tileSize = 20;
+	var tileSize = 32;
 
 	// Recuperation de la Room Factory
 	var Room = require('./class/Room.js');
@@ -22,11 +22,9 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
-	var defaultBlock = 0;
+	var defaultBlock = 30;
 
 	io.on('connection', function (socket) {
-
-		console.log("New user connected");
 
 /************************************************/
 /*******************	MENU	*****************/
@@ -95,19 +93,14 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 			RoomFactory.launchRoom(room);
 
 			// Generation de la map
-			generateMap().then(function(resultMap){
-
-				room.map = resultMap;
+			getLifeTile(room).then(function(resultLifeTile){
 
 				// On crée une position initial sur la map pour chaque joueurs
-				getRandomInitialPosition(room.map, room.players).then(function(resultPlayers){
-
-					console.log("vais lancer");
+				getRandomInitialPosition(resultLifeTile, room.players).then(function(resultPlayers){
 
 					// On recupere les données crée par le serveur sur la room à envoi
-					room.players = resultPlayers;
-
-					console.log("jlance");
+					room.players = resultPlayers.players;
+					room.lifeTileArray = resultPlayers.map;
 
 					// On envoi au client la nouvelle room, que le jeu commence!
 					io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
@@ -163,7 +156,6 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 /************************************************/
 
 		socket.on('generateSocketId', function(){
-			console.log("id generé");
 		    socket.emit('sendSocketId', socket.id);
 		});
 
@@ -203,27 +195,43 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 
 	function countConstructionMode(room){
 		countArray[room] = 30;
-		console.log("----------------1----------------");
 
 		intervalIdArray[room] = setInterval(bip, 1000, room);
 		setTimeout(action, countArray[room] * 1000, room);
 	}
 
 	function action(room){
-		console.log("----------------3----------------");
 	  	clearInterval(intervalIdArray[room]);
 	  	io.sockets.to(room).emit('construction.end', countArray[room]);
 	}
 
 	function bip(room){
-		console.log("----------------2----------------");
 	  	countArray[room] = countArray[room] - 1;
 	  	io.sockets.to(room).emit('construction.bip', countArray[room]);
 	}
 
-	function getRandomInitialPosition(map, players){
+	function getRandomInitialPosition(layer, players){
 
 		var deferred = Q.defer();
+
+		var heightLayer = layer.height;
+		var mapTmp = layer.data;
+
+		var map = [];
+		var count = 0;
+
+		var tmp = [];
+
+		// Pour chaque element sde la map
+		for(var i = 0; i < mapTmp.length; i++){
+			if(i % heightLayer == 0 && i != 0){
+				map.push(tmp);
+				tmp = [];
+				tmp.push(mapTmp[i]);
+			}else{
+				tmp.push(mapTmp[i]);
+			}
+		}
 
 		// Tableau des values possibles
 		var valideValue = [];
@@ -244,40 +252,29 @@ module.exports = exports = function(io, Q, pathFinding, model) {
 
 			// On attribu la position initial au joueur ciblé
 			players[i].initialPos = {posX: (result.w * tileSize) + tileSize / 2, posY: (result.h * tileSize) + tileSize / 2 };
-		}		
+		}
 
 		// On resolve la promise
-		deferred.resolve(players);
+		deferred.resolve({players: players, map: map});
 
 		return deferred.promise;
 	}
 
-	function generateMap(){
+	function getLifeTile(room){
 
 		var deferred = Q.defer();
 
-		var respawnPoint = 0;
+		var path = "././data/json/maps/map_level_" + room.level + ".json";
 
-		var mapWidth = Math.floor(mapSize.min + Math.random() * mapSize.max);
-		var mapHeight = Math.floor(mapSize.min + Math.random() * mapSize.max);
+		fs.readFile(path, 'utf8', function (err, data) {
+		  	if (err) throw err;
+		  	obj = JSON.parse(data);
+		  	// On resolve la promise
+			deferred.resolve(obj.layers[0]);
 
-		var mapArray = [];
-
-		for(var i= 0; i < mapWidth; i++){
-
-			var tmpArray = [];
-
-			for(var u= 0; u < mapHeight; u++){
-				tmpArray.push(
-					Math.random() < 0.1 ? 1 : 0
-				);
-			}
-
-			mapArray.push(tmpArray);
-		}
-
-		deferred.resolve(mapArray);
+		});		
 
 		return deferred.promise;
 	}
+
 };

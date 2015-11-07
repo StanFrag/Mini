@@ -15,7 +15,7 @@ Room.prototype.newRoom = function(id) {
 	// Si le tableau des rooms est vide
 	if(this.roomArray.length == 0){
 
-		var tmpObj = {idRoom: tmpId, players: [{idPlayer: id, ready: false}]}
+		var tmpObj = {idRoom: tmpId, players: [{idPlayer: id, ready: false}], level:1}
 
 		// On push l'id de la room dans l'array
 		this.roomArray.push(tmpObj);
@@ -28,7 +28,7 @@ Room.prototype.newRoom = function(id) {
 		
 		// Si l'id recuperé est bien defini
 		if(idResult){
-			var tmpObj = {idRoom: idResult, players: [{idPlayer: id, ready: false}]}
+			var tmpObj = {idRoom: idResult, players: [{idPlayer: id, ready: false}], level:1}
 
 			// On push la room dans l'array des rooms
 			this.roomArray.push(tmpObj);
