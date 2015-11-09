@@ -18,6 +18,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 	var countArray = [];
 	var readyArray = [];
+	var tilesLifeArray = [];
 	var intervalIdArray = [];
 
 	// Le default block est le block vide de base
@@ -93,19 +94,27 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			RoomFactory.launchRoom(room);
 
 			// Generation de la map
-			getLifeTile(room).then(function(resultLifeTile){
+			getMap(room).then(function(resultGetMap){
 
 				// On crée une position initial sur la map pour chaque joueurs
-				getRandomInitialPosition(resultLifeTile, room.players).then(function(resultPlayers){
+				getRandomInitialPosition(room, resultGetMap).then(function(resultPlayers){
 
 					// On recupere les données crée par le serveur sur la room à envoi
 					room.players = resultPlayers.players;
-					room.lifeTileArray = resultPlayers.map;
 
-					// On envoi au client la nouvelle room, que le jeu commence!
-					io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
+					// On crée une position initial sur la map pour chaque joueurs
+					createTilesLife(room).then(function(result){
 
-					readyArray[room.idRoom] = {ready: 0, players: room.players.length};
+						room.lifeMap = tilesLifeArray[room.idRoom];
+
+						// On envoi au client la nouvelle room, que le jeu commence!
+						io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
+
+						readyArray[room.idRoom] = {ready: 0, players: room.players.length};
+
+					}, function(err){
+						console.log(err);
+					})
 
 				}, function(err){
 					console.log(err);
@@ -210,37 +219,39 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 	  	io.sockets.to(room).emit('construction.bip', countArray[room]);
 	}
 
-	function getRandomInitialPosition(layer, players){
+	function getRandomInitialPosition(room, layer){
 
 		var deferred = Q.defer();
 
+		var players = room.players;
 		var heightLayer = layer.height;
-		var mapTmp = layer.data;
+		var mapTmp = tilesLifeArray[room.idRoom];
 
-		var map = [];
-		var count = 0;
+		var finalMap = [];
+		var valideValue = [];
 
 		var tmp = [];
 
-		// Pour chaque element sde la map
+		// Pour chaque element de la map
 		for(var i = 0; i < mapTmp.length; i++){
+
+			// Si la boucle atteint la height de la map
+			// on recrée un tableau
 			if(i % heightLayer == 0 && i != 0){
-				map.push(tmp);
+				finalMap.push(tmp);
 				tmp = [];
 				tmp.push(mapTmp[i]);
 			}else{
+				// Sinon on push simplement la value
 				tmp.push(mapTmp[i]);
 			}
 		}
 
-		// Tableau des values possibles
-		var valideValue = [];
-
 		// On traite l'ensemble de la map
-		for(var i= 0; i < map.length; i++){
-			for(var u = 0; u < map[i].length; u++){
+		for(var i= 0; i < finalMap.length; i++){
+			for(var u = 0; u < finalMap[i].length; u++){
 				// Si le blok est un bloc par default
-				if(map[i][u] == defaultBlock){
+				if(finalMap[i][u] == defaultBlock){
 					valideValue.push({w: i, h: u})
 				}
 			}
@@ -255,12 +266,48 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		}
 
 		// On resolve la promise
-		deferred.resolve({players: players, map: map});
+		deferred.resolve({players: players, map: finalMap, tmpMap : mapTmp});
 
 		return deferred.promise;
 	}
 
-	function getLifeTile(room){
+	function createTilesLife(room){
+
+		var deferred = Q.defer();
+
+		// Get maps
+		DataBaseFactory.getTiles().then(function(result){
+
+			// Pour chaque tuile recuperé
+			result.forEach(logArrayElements, tilesLifeArray[room.idRoom]);
+
+			deferred.resolve();
+
+		}, function(err){
+			socket.emit('errorReceive', err);
+		})
+
+		return deferred.promise;
+	}
+
+	function logArrayElements(element, index, array) {
+		// On recupere les index de la map
+	    var indexes = getAllIndexes(this, element.tile_number);
+
+	    for(var i = 0; i < indexes.length; i++){
+	    	this[indexes[i]] = {index: element.tile_number, life: element.life};
+	    }
+	}
+
+	function getAllIndexes(arr, val) {
+	    var indexes = [], i = -1;
+	    while ((i = arr.indexOf(val, i+1)) != -1){
+	        indexes.push(i);
+	    }
+	    return indexes;
+	}
+
+	function getMap(room){
 
 		var deferred = Q.defer();
 
@@ -269,9 +316,12 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		fs.readFile(path, 'utf8', function (err, data) {
 		  	if (err) throw err;
 		  	obj = JSON.parse(data);
+		  	
+		  	// On place la matrice recu dans le tableau des lifes de tuiles pour plus tard
+		  	tilesLifeArray[room.idRoom] = obj.layers[0].data;
+
 		  	// On resolve la promise
 			deferred.resolve(obj.layers[0]);
-
 		});		
 
 		return deferred.promise;
