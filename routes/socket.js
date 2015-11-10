@@ -21,6 +21,8 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 	var tilesLifeArray = [];
 	var intervalIdArray = [];
 
+	var timerRate = 5;
+
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
 	var defaultBlock = 30;
@@ -96,16 +98,24 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			// Generation de la map
 			getMap(room).then(function(resultGetMap){
 
+				console.log("oki");
+
 				// On crée une position initial sur la map pour chaque joueurs
 				getRandomInitialPosition(room, resultGetMap).then(function(resultPlayers){
 
 					// On recupere les données crée par le serveur sur la room à envoi
-					room.players = resultPlayers.players;
+					room.players = resultPlayers;
+					console.log("oki1");
 
 					// On crée une position initial sur la map pour chaque joueurs
 					createTilesLife(room, resultGetMap).then(function(result){
 
-						room.lifeMap = tilesLifeArray[room.idRoom];
+						console.log("oki2");
+
+						room.lifeMap = result;
+						room.defaultBlock = defaultBlock;
+
+						console.log("oki3");
 
 						// On envoi au client la nouvelle room, que le jeu commence!
 						io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
@@ -160,6 +170,10 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			
 		});
 
+		socket.on('tile.shot', function(data){
+		    io.sockets.to(data.room).emit('tile.shot', data);
+		});
+
 /************************************************/
 /******************	UTILITAIRE	*****************/
 /************************************************/
@@ -167,6 +181,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		socket.on('generateSocketId', function(){
 		    socket.emit('sendSocketId', socket.id);
 		});
+
 
 /************************************************/
 /***********	CONSTRUCTION MODE	*************/
@@ -202,7 +217,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 /************************************************/
 
 	function countConstructionMode(room){
-		countArray[room] = 30;
+		countArray[room] = timerRate;
 
 		intervalIdArray[room] = setInterval(bip, 1000, room);
 		setTimeout(action, countArray[room] * 1000, room);
@@ -224,14 +239,12 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 		var players = room.players;
 		var heightLayer = layer.height;
-		var mapTmp = tilesLifeArray[room.idRoom];
+		var mapTmp = layer.data;
 
+		var tmp = [];
 		var finalMap = [];
 		var valideValue = [];
 
-		var tmp = [];
-
-		// Pour chaque element de la map
 		for(var i = 0; i < mapTmp.length; i++){
 
 			// Si la boucle atteint la height de la map
@@ -265,7 +278,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		}
 
 		// On resolve la promise
-		deferred.resolve({players: players, map: finalMap, tmpMap : mapTmp});
+		deferred.resolve(players);
 
 		return deferred.promise;
 	}
@@ -277,33 +290,34 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		// Get maps
 		DataBaseFactory.getTiles().then(function(result){
 
-			var tilesArray = tilesLifeArray[room.idRoom];
-			var heightLayer = layer.height;
+			// Pour chaque tuile recuperé
+			result.forEach(logArrayElements, tilesLifeArray[room.idRoom]);
 
 			var finalMap = [];
 			var tmp = [];
+			var heightLayer = layer.height;
+			var mapTmp = layer.data;
 
-			// Pour chaque tuile recuperé
-			result.forEach(logArrayElements, tilesArray);
+			console.log("oki4");
 
 			// Pour chaque element de la map
-			for(var i = 0; i < tilesArray.length; i++){
+			for(var i = 0; i < mapTmp.length; i++){
 
 				// Si la boucle atteint la height de la map
 				// on recrée un tableau
 				if(i % heightLayer == 0 && i != 0){
 					finalMap.push(tmp);
 					tmp = [];
-					tmp.push(tilesArray[i]);
+					tmp.push(mapTmp[i]);
 				}else{
 					// Sinon on push simplement la value
-					tmp.push(tilesArray[i]);
+					tmp.push(mapTmp[i]);
 				}
 			}
 
-			tilesLifeArray[room.idRoom] = finalMap;
+			console.log("oki5");
 
-			deferred.resolve();
+			deferred.resolve(finalMap);
 
 		}, function(err){
 			socket.emit('errorReceive', err);

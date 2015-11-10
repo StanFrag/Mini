@@ -298,6 +298,17 @@ play.prototype = {
 			}
 		});
 
+		socket.on('tile.shot', function(data){
+			var array = _currentPlayState.room.lifeMap;
+			_currentPlayState.room.lifeMap[data.tileY][data.tileX].life = array[data.tileY][data.tileX].life - 1;
+
+			if(_currentPlayState.room.lifeMap[data.tileY][data.tileX].life == 0){
+				console.log("tuile dead");
+				var map = _currentPlayState.map.getMap();
+	    		map.putTile(_currentPlayState.room.defaultBlock, _currentPlayState.layer.getTileX(data.tileY), _currentPlayState.layer.getTileY(data.tileX));
+			}
+		});
+
 		socket.on('construction.end', function(data){
 			_currentPlayState.gameMode = true;
 			_currentPlayState.constructionPicker.hide();
@@ -319,6 +330,11 @@ play.prototype = {
 
 		socket.on('construction.changeTile', function(data){
 			var map = _currentPlayState.map.getMap();
+			var array = _currentPlayState.room.lifeMap;
+
+			// on modifie la tuile au niveau du tableau des lifes
+			_currentPlayState.room.lifeMap[data.marker.x][data.marker.y] = {index: data.tile.index, life};
+			// Puis on remplace la tile ciblé
 		    map.putTile(data.tile, _currentPlayState.layer.getTileX(data.marker.x), _currentPlayState.layer.getTileY(data.marker.y));
 		});
 	},
@@ -343,8 +359,9 @@ play.prototype = {
 		
 		bullet.kill();
 		console.log('Tile',tile);
-		var map = _currentPlayState.map.getMap();
-		map.putTile(30, tile.x, tile.y);
+		socket.emit('tile.shot', { tileX: tile.x, tileY: tile.y, index: tile.index });
+		//var map = _currentPlayState.map.getMap();
+		//map.putTile(30, tile.x, tile.y);
 	},
 
 	// Function simple d'update d'Array

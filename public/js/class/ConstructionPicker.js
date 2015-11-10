@@ -40,7 +40,7 @@ ConstructionPicker.prototype = {
   				var idTile = tile[i].tile_number;
 
   				// On crée un element dans la gui pour cette tuile
-  				list.push({ id: idTile, component: 'Button', position: 'center', width: 90, height: 120, text: tile[i].name });
+  				list.push({ id: idTile, component: 'Button', position: 'center', width: 90, height: 120, text: tile[i].name, life: tile[i].life });
 
   				// Puis on push sont index dans le tableau des index de tuile
   				_current.idTileArray.push(idTile);
@@ -55,7 +55,7 @@ ConstructionPicker.prototype = {
 		    var gameHeight = _constructionState.height - main.height;
 		   	main.y = gameHeight;
 		   	
-		   	_current.createOnClick();
+		   	_current.createOnClick(tile);
 		});
 
 	},
@@ -64,7 +64,7 @@ ConstructionPicker.prototype = {
 		this.socketReception();
 	},
 
-	createOnClick: function(){
+	createOnClick: function(tile){
 		var tmpComponent = EZGUI.components;
 
 		// Pour chaque composant du gui
@@ -77,7 +77,7 @@ ConstructionPicker.prototype = {
 				// Et on crée un event click dessus
 				obj.on('click', function (event) {
 					// A chaque clique on modifie la variable global de tuile courante
-	                _current.currentTile = obj.Id;
+	                _current.currentTile = { index: obj.Id, life: obj.life };
 	            });
 			}
 		}
@@ -93,7 +93,6 @@ ConstructionPicker.prototype = {
 
 	socketReception: function(){
 		socket.on('construction.getPicker', function(data){
-			console.log("data: ",data);
 			_current.createGui(data);
 		});
 	},
