@@ -115,15 +115,8 @@ play.prototype = {
 		        client.moveX(150);
 
 		        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x: 150, stateId: id, lastState: client.getState() });
-
-		        console.log("right")
 		    }else{
-	        	var id = this.generateId();
-
-	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
 	            client.moveX(0);
-
-	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
 		    }
 
 		    if (this.cursor.left.isDown){
@@ -135,15 +128,8 @@ play.prototype = {
 		        client.moveX(-150);
 
 		        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x: -150, stateId: id, lastState: client.getState() });
-
-		        console.log("left")
 		    }else{
-	        	var id = this.generateId();
-
-	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
 	            client.moveX(0);
-
-	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
 		    }
 
 		    if(this.cursor.up.isDown){
@@ -155,15 +141,8 @@ play.prototype = {
 		        client.moveY(250);
 
 		        socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 250, x:0, stateId: id, lastState: client.getState() });
-
-		        console.log("up")
 		    }else{
-	        	var id = this.generateId();
-
-	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
 	            client.moveY(0);
-
-	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
 		    }
 
 		    if (this.cursor.down.isDown){
@@ -173,15 +152,14 @@ play.prototype = {
 	            client.moveY(-150);
 
 	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: -150, x:0, stateId: id, lastState: client.getState() });
-
-	            console.log("down")
 		    }else{
+		    	/*
 	        	var id = this.generateId();
-
 	        	this.stateArray.push({ y: 0, x:0, stateId: id, lastState: client.getState() });
+	        	*/
 	            client.moveY(0);
 
-	            socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
+	            //socket.emit('player.move', { idUser: USER_ID, room: this.room.idRoom, y: 0, x:0, stateId: id, lastState: client.getState() });
 		    }
 
 		    if (this.game.input.activePointer.isDown)
