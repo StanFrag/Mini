@@ -19,43 +19,34 @@ boot.prototype = {
 
 		this.enablePlugins();
 
-		this.game.scale.fullScreenTarget = this.parentElement;
-        this.game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
-        this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL; // Important
-        this.game.scale.pageAlignHorizontally = true;
-        this.game.scale.pageAlignVertically = true;
+		this.game.input.maxPointers = 1;
         this.game.stage.disableVisibilityChange = true;
-        this.game.input.maxPointers = 1;
 
-        
-        this.game.scale.setResizeCallback(function () {
-            // you would probably just use this.game.scale.setResizeCallback(this.resize, this);
-
-            this.game.scale.forceOrientation(true, false, 'orientation');
+        if (this.game.device.desktop)
+        {
+            this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+            this.game.stage.scale.minWidth = 480;
+            this.game.stage.scale.minHeight = 260;
+            this.game.stage.scale.maxWidth = 1024;
+            this.game.stage.scale.maxHeight = 768;
+            this.game.stage.scale.pageAlignHorizontally = true;
+            this.game.stage.scale.pageAlignVertically = true;
+            this.game.scale.setScreenSize(true);
+        }
+        else
+        {
+            this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+            this.game.stage.scale.minWidth = 480;
+            this.game.stage.scale.minHeight = 260;
+            this.game.stage.scale.maxWidth = 1024;
+            this.game.stage.scale.maxHeight = 768;
+            this.game.stage.scale.pageAlignHorizontally = true;
+            this.game.stage.scale.pageAlignVertically = true;
+            this.game.scale.forceOrientation(true, false);
             this.game.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation);
             this.game.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation);
-            this.game.scale.setShowAll();
-            this.game.scale.refresh();
-
-            var _this = this;
-            var logging = true;
-
-            // A value of 1 means no scaling 0.5 means half size, 2 double the size and so on.
-            var scale = Math.min(window.innerWidth / _this.game.width, window.innerHeight / _this.game.height);
-         
-            // Resize parent div in order to vertically center the canvas correctly.
-            this.parentElement.style.minHeight = window.innerHeight.toString() + "px";
-         
-            // Resize the canvas keeping the original aspect ratio.
-            _this.game.scale.setUserScale(scale, scale, 0, 0);
-         
-            if (logging == true) {
-                var w = Math.floor(_this.game.width * scale),
-                    h = Math.floor(_this.game.height * scale);
-                console.info("The game has just been resized to: " + w + " x " + h);
-            }
-        }, this);
-        
+            this.game.scale.setScreenSize(true);
+        }        
 
 		this.game.state.start("Preload");
 	},
@@ -65,13 +56,18 @@ boot.prototype = {
 		CACHE_KEY = Phaser.Plugin.Tiled.utils.cacheKey;
 	},
 
+    gameResized: function (width, height) {
+        //  This could be handy if you need to do any extra processing if the game resizes.
+        //  A resize could happen if for example swapping orientation on a device.
+    },
+
     enterIncorrectOrientation: function () {
-        GameCtrl.orientated = false;
+        this.orientated = false;
         document.getElementById('orientation').style.display = 'block';
     },
 
     leaveIncorrectOrientation: function () {
-        GameCtrl.orientated = true;
+        this.orientated = true;
         document.getElementById('orientation').style.display = 'none';
     }
 }
