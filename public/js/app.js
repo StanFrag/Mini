@@ -17,13 +17,10 @@ window.onload=function(){
 
     socket.emit('generateSocketId');
 
-    // Ensemble des parametres lié au jeu
-    var paramsList = {};
+    var w = window.innerWidth * window.devicePixelRatio;
+    var h = window.innerHeight * window.devicePixelRatio;
 
-    paramsList.width = 500;
-    paramsList.height = 720;
-
-    var game = new Phaser.Game(paramsList.width, paramsList.height, Phaser.CANVAS, "game");
+    var game = new Phaser.Game((h > w) ? h : w, (h > w) ? w : h, Phaser.CANVAS, "game");
 
     game.state.add("Boot",boot);                // Initialisation de l'application (scale/plateforme)
     game.state.add("Preload",preload);          // Preload des elements de Menu (images/sons)

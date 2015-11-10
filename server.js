@@ -30,16 +30,16 @@ mongoose.connect('mongodb://ujhgjs0txcun5ze:hRkZYpdk0NR659yITCDn@b6elb6t4b6sm3gf
 var db = mongoose.connection;
 
 // SCHEMAS
-console.log("MongoDB - Schemas lancement.")
+console.log("MongoDB - Schemas lancement.");
 var schemaFactory = new Schemas(mongoose, Q);
 var tmpSchemas = schemaFactory.getSchemas();
-console.log("MongoDB - Schemas initié.")
+console.log("MongoDB - Schemas initié.");
 
 // MODELS
-console.log("MongoDB - Models lancement.")
+console.log("MongoDB - Models lancement.");
 var modelFactory = new Models(mongoose, Q, tmpSchemas);
 var tmpModels = modelFactory.getModels();
-console.log("MongoDB - Models initié.")
+console.log("MongoDB - Models initié.");
 
 // Socket
 require('./routes/socket.js')(io, Q, PF, fs, tmpModels);
