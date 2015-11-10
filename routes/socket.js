@@ -168,7 +168,6 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		    socket.emit('sendSocketId', socket.id);
 		});
 
-
 /************************************************/
 /***********	CONSTRUCTION MODE	*************/
 /************************************************/
