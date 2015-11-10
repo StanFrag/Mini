@@ -15,18 +15,18 @@ boot.prototype = {
 
         if (this.game.device.desktop)
         {
-            this.game.stage.scaleMode = Phaser.StageScaleMode.SHOW_ALL;
+            this.game.stage.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.game.stage.scale.minWidth = 480;
             this.game.stage.scale.minHeight = 260;
             this.game.stage.scale.maxWidth = 1024;
             this.game.stage.scale.maxHeight = 768;
             this.game.stage.scale.pageAlignHorizontally = true;
             this.game.stage.scale.pageAlignVertically = true;
-            this.game.stage.scale.setScreenSize(true);
+            //this.game.stage.scale.setScreenSize(true);
         }
         else
         {
-            this.game.stage.scaleMode = Phaser.StageScaleMode.SHOW_ALL;
+            this.game.stage.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.game.stage.scale.minWidth = 480;
             this.game.stage.scale.minHeight = 260;
             this.game.stage.scale.maxWidth = 1024;
@@ -37,7 +37,7 @@ boot.prototype = {
             this.game.stage.scale.hasResized.add(this.gameResized, this);
             this.game.stage.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
             this.game.stage.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
-            this.game.stage.scale.setScreenSize(true);
+            //this.game.stage.scale.setScreenSize(true);
         }
 		
 		this.game.state.start("Preload");
