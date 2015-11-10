@@ -26,12 +26,29 @@ boot.prototype = {
         this.game.stage.disableVisibilityChange = true;
         this.game.input.maxPointers = 1;
 
-        /*
+        
         this.game.scale.setResizeCallback(function () {
-            Utils.Mobile.resize(this.parentElement, this, true); 
             // you would probably just use this.game.scale.setResizeCallback(this.resize, this);
+
+            var _this = this;
+            var logging = true;
+
+            // A value of 1 means no scaling 0.5 means half size, 2 double the size and so on.
+            var scale = Math.min(window.innerWidth / _this.game.width, window.innerHeight / _this.game.height);
+         
+            // Resize parent div in order to vertically center the canvas correctly.
+            this.parentElement.style.minHeight = window.innerHeight.toString() + "px";
+         
+            // Resize the canvas keeping the original aspect ratio.
+            _this.game.scale.setUserScale(scale, scale, 0, 0);
+         
+            if (logging == true) {
+                var w = Math.floor(_this.game.width * scale),
+                    h = Math.floor(_this.game.height * scale);
+                console.info("The game has just been resized to: " + w + " x " + h);
+            }
         }, this);
-        */
+        
 
 		this.game.state.start("Preload");
 	},
