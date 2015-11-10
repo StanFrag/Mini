@@ -18,13 +18,23 @@ var Schemas = function(mongoose, Q) {
 			pathJSON : String
 		});
 
-		this.schemas.tilesSchema = new this.mongoose.Schema({
+		this.schemas.tileSchema = new this.mongoose.Schema({
 			name : String,
 			description : String,
 			life: { type: Number, min: 1 },
 			tile_number: { type: Number, min: 0 },
 			construction_enable: Boolean,
 			type: String
+		});
+
+		this.schemas.ennemiSchema = new this.mongoose.Schema({
+			name : String,
+			description : String,
+			life: { type: Number, min: 1 },
+			min_level: { type: Number, min: 1 },
+			max_level: { type: Number, min: 1 },
+			appear_rate: { type: Number, min: 1, max: 100 },
+			path: String,
 		});
 
 		return this.schemas;

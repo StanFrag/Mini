@@ -9,7 +9,8 @@ var Models = function(mongoose, Q, schema) {
     this.getModels = function() {
     	// On liste les differents modeles mis en place
 		this.models.mapModel = this.mongoose.model('map', schema.mapSchema);
-        this.models.tilesModel = this.mongoose.model('tiles', schema.tilesSchema);
+        this.models.tileModel = this.mongoose.model('tile', schema.tileSchema);
+        this.models.ennemiModel = this.mongoose.model('ennemi', schema.ennemiSchema);
 
 		return this.models;
     }

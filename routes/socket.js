@@ -19,10 +19,13 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 	var countArray = [];
 	var readyArray = [];
 	var tilesLifeArray = [];
+	var EnnemisArray = [];
 	var intervalIdArray = [];
 
 	// Temps de construction
 	var constructionTimerRate = 30;
+
+	var ennemisRate = 30;
 
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
@@ -36,13 +39,8 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 		socket.on('createNewRoom', function(){
 			// Get maps
-			DataBaseFactory.getMaps().then(function(result){
-				var tmp = RoomFactory.newRoom(socket.id);
-				tmp.listMaps = result;
-				socket.emit('roomCreated', tmp);
-			}, function(err){
-				socket.emit('errorReceive', err);
-			})			
+			var tmp = RoomFactory.newRoom(socket.id);
+			socket.emit('roomCreated', tmp);
 		});
 
 		// Un player envoi une requete pour rejoindre une room a l'aide d'un lien
@@ -76,15 +74,6 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			io.sockets.to(room.idRoom).emit('newRoomReceived', room);
 		});
 
-		// Un player previent qu'il vient d'arriver dans une room
-		socket.on('getMaps', function(){
-			// Get maps
-			var tmp = DataBaseFactory.getMaps();
-
-			// On renvoi aux clients de la room la new room
-			io.sockets.to(room.idRoom).emit('newRoomReceived', room);
-		});
-
 		// Un player previent qu'il est pret pour le lancement de la game
 		socket.on('changeReadyState', function(room){
 			var tmp = RoomFactory.changeState(room, socket.id);
@@ -106,22 +95,22 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 					// On recupere les données crée par le serveur sur la room à envoi
 					room.players = resultPlayers;
-					console.log("oki1");
 
-					// On crée une position initial sur la map pour chaque joueurs
-					createTilesLife(room, resultGetMap).then(function(result){
-
-						console.log("oki2");
+					// On genere la tableau de la vie des tuiles a envoyer aux joueurs au debut de la partie
+					generateTilesLife(room, resultGetMap).then(function(result){
 
 						room.lifeMap = result;
 						room.defaultBlock = defaultBlock;
 
-						console.log("oki3");
+						// On genere les ennemis et leurs positions
+						generateEnnemis(room).then(function(result){
 
-						// On envoi au client la nouvelle room, que le jeu commence!
-						io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
+							// On envoi au client la nouvelle room, que le jeu commence!
+							io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
 
-						readyArray[room.idRoom] = {ready: 0, players: room.players.length};
+						}, function(err){
+							console.log(err);
+						})
 
 					}, function(err){
 						console.log(err);
@@ -194,7 +183,6 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			if(readyArray[data.room].ready == readyArray[data.room].players){
 				countConstructionMode(data.room);
 			}
-
 		});
 
 		socket.on('construction.changeTile', function(data){
@@ -284,7 +272,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		return deferred.promise;
 	}
 
-	function createTilesLife(room, layer){
+	function generateTilesLife(room, layer){
 
 		var deferred = Q.defer();
 
@@ -298,8 +286,6 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			var tmp = [];
 			var heightLayer = layer.height;
 			var mapTmp = layer.data;
-
-			console.log("oki4");
 
 			// Pour chaque element de la map
 			for(var i = 0; i < mapTmp.length; i++){
@@ -316,8 +302,6 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 				}
 			}
 
-			console.log("oki5");
-
 			deferred.resolve(finalMap);
 
 		}, function(err){
@@ -325,6 +309,58 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		})
 
 		return deferred.promise;
+	}
+
+	function generateEnnemis(room, layer){
+
+		var deferred = Q.defer();
+
+		DataBaseFactory.getEnnemisByLevel(room.level).then(function(result){
+			
+			console.log(result);
+			var nb_ennemis = ennemisRate * level;
+
+			// Pour chaque ennemi que l'on va generer
+			for(var i = 0; i < nb_ennemis; i++){
+
+				// On crée un valeur aleatoire de 1 à 100
+				var tmpNum = Math.floor(1 + Math.random() * 100);
+				var count = 0;
+				var diffEnnemis = result.length;
+
+				// Et on test la valeur
+				testAppear(tmpNum, result, count, room);
+			}
+
+			console.log(EnnemisArray);
+
+		}, function(err){
+			socket.emit('errorReceive', err);
+		})
+
+		return deferred.promise;
+	}
+
+	function testAppear(tmpNum, arrayEnnemis, count, room){
+
+		// Si la valeur recuperé est superieur au taux d'apparition du monstre
+		if(tmpNum > arrayEnnemis[count].appear_rate){
+			// On retire le pourcentage du monstre au num
+			tmpNum = tmpNum - arrayEnnemis[count].appear_rate;
+			// On incremente la cont
+			count++;
+
+			// Si le count est superieur aux nombres d'ennemis existant dans la db on le renvoi a 0;
+			if(count <= arrayEnnemis.length){
+				count = 0;
+			}
+
+			// Et on renvoi la question
+			testAppear(tmpNum, arrayEnnemis, count, room);
+		}
+
+		// Si le ratio est bon on push l'ennemi dans le tableau des ennemis
+		EnnemisArray[room.idRoom] = arrayEnnemis[count];
 	}
 
 	function logArrayElements(element, index, array) {

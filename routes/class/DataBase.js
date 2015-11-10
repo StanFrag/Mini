@@ -4,24 +4,13 @@ function DataBase(model, Q) {
   	this.model = model;
   	this.Q = Q;
 }
+
 // class methods
-DataBase.prototype.getMaps = function() {
-
-	var deferred = this.Q.defer();
-
-	this.model.mapModel.find(null, function (err, result) {
-	  if (err) { deferred.reject(err); }
-	  deferred.resolve(result);
-	});
-
-	return deferred.promise;
-};
-
 DataBase.prototype.getConstructionTiles = function() {
 
 	var deferred = this.Q.defer();
 
-	this.model.tilesModel.find(null, function (err, result) {
+	this.model.tileModel.find(null, function (err, result) {
 	  if (err) { deferred.reject(err); }
 	  deferred.resolve(result);
 	});
@@ -33,7 +22,19 @@ DataBase.prototype.getTiles = function() {
 
 	var deferred = this.Q.defer();
 
-	this.model.tilesModel.find(null, function (err, result) {
+	this.model.tileModel.find(null, function (err, result) {
+	  if (err) { deferred.reject(err); }
+	  deferred.resolve(result);
+	});
+
+	return deferred.promise;
+};
+
+DataBase.prototype.getEnnemisByLevel = function(level) {
+
+	var deferred = this.Q.defer();
+
+	this.model.ennemiModel.find( { min_level : { $lte: level }, max_level : { $gte: level} }, function (err, result) {
 	  if (err) { deferred.reject(err); }
 	  deferred.resolve(result);
 	});

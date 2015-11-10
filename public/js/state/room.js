@@ -66,26 +66,6 @@ room.prototype = {
 
 		var inputButton = this.game.add.button(this.world.centerX, 50, bmd, function(){input.focus()}, this);
 		inputButton.anchor.set(1, 0.09);
-
-		this.createListMaps();
-
-		/*
-		var infoIdRoom = this.game.add.text(this.world.centerX, 50, "Id de la partie: " + this.room.idRoom, { font: "12pt Arial", fill: "#FFFFFF", align: "center" });
-		infoIdRoom.inputEnable = true;
-		infoIdRoom.anchor.set(0.5);
-		*/
-	},
-
-	createListMaps: function(){
-		for(var i = 0; i < this.room.listMaps.length; i++){
-			
-			var tmp = this.game.add.text(this.world.centerX, (this.world.height / 2) + (i * 15), this.room.listMaps[i]['title'], { font: "16pt Arial", fill: '#FFFFFF', align: "center" });
-			tmp.anchor.set(0.5);
-
-			//tmp.events.onInputDown.add(this.chooseMap, {room: room});
-			//tmp.events.onInputOver.add(this.over, this);
-			//tmp.events.onInputOut.add(this.out, this);
-		}
 	},
 
 	createLancementButton: function(room){
@@ -181,9 +161,5 @@ room.prototype = {
 
 	lancementPartie: function(room) {
 		socket.emit('beginGame', this.room);
-	},
-
-	chooseMap: function(room) {
-		socket.emit('activeMap', this.room);
 	},
 }

@@ -18,12 +18,13 @@ var modelFactory = new Models(mongoose, Q, tmpSchemas);
 var tmpModels = modelFactory.getModels();
 
 // On crée une instance du Model
-var obj = new tmpModels.tilesModel({ name : 'cactus' });
+var obj = new tmpModels.ennemiModel({ name : 'Marcheur' });
 
-obj.description = 'Salut, je suis un cactus !';
+obj.description = 'Un monstre basique, qui marche et attaque.';
 obj.life = 3;
-obj.tile_number = 31;
-obj.construction_enable = true;
+obj.min_level = 1,
+obj.max_level = 100,
+obj.appear_rate = 50,
 
 // On le sauvegarde dans MongoDB !
 obj.save(function (err) {

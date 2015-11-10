@@ -19,6 +19,7 @@ boot.prototype = {
 
 		this.enablePlugins();
 
+        /*
 		this.game.input.maxPointers = 1;
         this.game.stage.disableVisibilityChange = true;
 
@@ -31,7 +32,7 @@ boot.prototype = {
             this.game.stage.scale.maxHeight = 768;
             this.game.stage.scale.pageAlignHorizontally = true;
             this.game.stage.scale.pageAlignVertically = true;
-            this.game.scale.setScreenSize(true);
+            this.game.scale.refresh();
         }
         else
         {
@@ -45,8 +46,9 @@ boot.prototype = {
             this.game.scale.forceOrientation(true, false);
             this.game.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation);
             this.game.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation);
-            this.game.scale.setScreenSize(true);
-        }        
+            this.game.scale.refresh();
+        }  
+        */      
 
 		this.game.state.start("Preload");
 	},
