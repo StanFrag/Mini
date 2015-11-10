@@ -103,7 +103,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 					room.players = resultPlayers.players;
 
 					// On crée une position initial sur la map pour chaque joueurs
-					createTilesLife(room).then(function(result){
+					createTilesLife(room, resultGetMap).then(function(result){
 
 						room.lifeMap = tilesLifeArray[room.idRoom];
 
@@ -270,15 +270,38 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		return deferred.promise;
 	}
 
-	function createTilesLife(room){
+	function createTilesLife(room, layer){
 
 		var deferred = Q.defer();
 
 		// Get maps
 		DataBaseFactory.getTiles().then(function(result){
 
+			var tilesArray = tilesLifeArray[room.idRoom];
+			var heightLayer = layer.height;
+
+			var finalMap = [];
+			var tmp = [];
+
 			// Pour chaque tuile recuperé
-			result.forEach(logArrayElements, tilesLifeArray[room.idRoom]);
+			result.forEach(logArrayElements, tilesArray);
+
+			// Pour chaque element de la map
+			for(var i = 0; i < tilesArray.length; i++){
+
+				// Si la boucle atteint la height de la map
+				// on recrée un tableau
+				if(i % heightLayer == 0 && i != 0){
+					finalMap.push(tmp);
+					tmp = [];
+					tmp.push(tilesArray[i]);
+				}else{
+					// Sinon on push simplement la value
+					tmp.push(tilesArray[i]);
+				}
+			}
+
+			tilesLifeArray[room.idRoom] = finalMap;
 
 			deferred.resolve();
 
