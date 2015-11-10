@@ -1,6 +1,7 @@
 var boot = function (game) {
     this.game = game;
     this.parentElement = document.getElementById("game");
+    this.orientation = false;
 };
   
 boot.prototype = {
@@ -30,6 +31,12 @@ boot.prototype = {
         this.game.scale.setResizeCallback(function () {
             // you would probably just use this.game.scale.setResizeCallback(this.resize, this);
 
+            this.game.scale.forceOrientation(true, false, 'orientation');
+            this.game.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation);
+            this.game.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation);
+            this.game.scale.setShowAll();
+            this.game.scale.refresh();
+
             var _this = this;
             var logging = true;
 
@@ -56,5 +63,15 @@ boot.prototype = {
 	enablePlugins: function(){
 		this.game.add.plugin(Phaser.Plugin.Tiled);
 		CACHE_KEY = Phaser.Plugin.Tiled.utils.cacheKey;
-	}
+	},
+
+    enterIncorrectOrientation: function () {
+        GameCtrl.orientated = false;
+        document.getElementById('orientation').style.display = 'block';
+    },
+
+    leaveIncorrectOrientation: function () {
+        GameCtrl.orientated = true;
+        document.getElementById('orientation').style.display = 'none';
+    }
 }

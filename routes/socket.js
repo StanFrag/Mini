@@ -21,7 +21,8 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 	var tilesLifeArray = [];
 	var intervalIdArray = [];
 
-	var timerRate = 5;
+	// Temps de construction
+	var constructionTimerRate = 30;
 
 	// Le default block est le block vide de base
 	// Permet le deplacement sur lui; Aucune action possible
@@ -217,7 +218,7 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 /************************************************/
 
 	function countConstructionMode(room){
-		countArray[room] = timerRate;
+		countArray[room] = constructionTimerRate;
 
 		intervalIdArray[room] = setInterval(bip, 1000, room);
 		setTimeout(action, countArray[room] * 1000, room);
