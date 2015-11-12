@@ -106,5 +106,5 @@ app.get('/gui/:file', function(req, res) {
 	});
 })
 
-server.listen(runningPortNumber || 4000);
+server.listen(runningPortNumber || 3600);
 

@@ -88,7 +88,9 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 			// Generation de la map
 			getMap(room).then(function(resultGetMap){
 
-				console.log("oki");
+				// On crée l'objet pour tester que tout les joueurs soit ready pour la construction
+				readyArray[room.idRoom] = {ready: 0, players: room.players.length};
+				room.tileSize = tileSize;
 
 				// On crée une position initial sur la map pour chaque joueurs
 				getRandomInitialPosition(room, resultGetMap).then(function(resultPlayers){
@@ -104,6 +106,8 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 						// On genere les ennemis et leurs positions
 						generateEnnemis(room).then(function(result){
+
+							room.ennemis = EnnemisArray[room.idRoom];
 
 							// On envoi au client la nouvelle room, que le jeu commence!
 							io.sockets.to(room.idRoom).emit('receiveBeginGame', room);
@@ -162,6 +166,10 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 
 		socket.on('tile.shot', function(data){
 		    io.sockets.to(data.room).emit('tile.shot', data);
+		});
+
+		socket.on('ennemi.shot', function(data){
+		    io.sockets.to(data.room).emit('ennemi.shot', data);
 		});
 
 /************************************************/
@@ -311,28 +319,33 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		return deferred.promise;
 	}
 
-	function generateEnnemis(room, layer){
+	function generateEnnemis(room){
 
 		var deferred = Q.defer();
 
+		// on crée le tableau des ennemis
+		EnnemisArray[room.idRoom] = [];
+
 		DataBaseFactory.getEnnemisByLevel(room.level).then(function(result){
 			
-			console.log(result);
-			var nb_ennemis = ennemisRate * level;
+			// Nombre d'ennemis present sur la map selon le level
+			var nb_ennemis = ennemisRate * room.level;
 
 			// Pour chaque ennemi que l'on va generer
-			for(var i = 0; i < nb_ennemis; i++){
+			for(var u = 0; u < nb_ennemis; u++){
 
 				// On crée un valeur aleatoire de 1 à 100
 				var tmpNum = Math.floor(1 + Math.random() * 100);
+				// on crée un counter
 				var count = 0;
+				// et on compte le nombre d'ennemis different recuperé en db
 				var diffEnnemis = result.length;
 
-				// Et on test la valeur
-				testAppear(tmpNum, result, count, room);
+				// Et on test la valeur aleatoire
+				testAppearEnnemis(tmpNum, result, count, room);
 			}
 
-			console.log(EnnemisArray);
+			deferred.resolve()
 
 		}, function(err){
 			socket.emit('errorReceive', err);
@@ -341,26 +354,38 @@ module.exports = exports = function(io, Q, pathFinding, fs, model) {
 		return deferred.promise;
 	}
 
-	function testAppear(tmpNum, arrayEnnemis, count, room){
+	function testAppearEnnemis(tmpNum, arrayEnnemis, count, room){
 
 		// Si la valeur recuperé est superieur au taux d'apparition du monstre
 		if(tmpNum > arrayEnnemis[count].appear_rate){
+
 			// On retire le pourcentage du monstre au num
 			tmpNum = tmpNum - arrayEnnemis[count].appear_rate;
 			// On incremente la cont
 			count++;
 
 			// Si le count est superieur aux nombres d'ennemis existant dans la db on le renvoi a 0;
-			if(count <= arrayEnnemis.length){
+			if(count == arrayEnnemis.length){
 				count = 0;
 			}
 
 			// Et on renvoi la question
-			testAppear(tmpNum, arrayEnnemis, count, room);
-		}
+			testAppearEnnemis(tmpNum, arrayEnnemis, count, room);
+		}else{
 
-		// Si le ratio est bon on push l'ennemi dans le tableau des ennemis
-		EnnemisArray[room.idRoom] = arrayEnnemis[count];
+			var tmpOneX = Math.floor( 1 + Math.random() * 10 ) * -1 ; // interval[ -10, -1 ]
+			var tmpTwoX = Math.floor( (room.lifeMap[0].length * tileSize) + Math.random() * (room.lifeMap[0].length + 10)); // interval[ maxXMap, maxXMap + 10]
+			var finalX = Math.floor( 1 + Math.random() * 2) == 1 ? tmpOneX : tmpTwoX; // On choisi (50%) l'un ou l'autre valeur 
+
+			var tmpOneY = Math.floor( 1 + Math.random() * 10 ) * -1 ; // interval [ -10, -1 ]
+			var tmpTwoY = Math.floor( (room.lifeMap.length * tileSize) + Math.random() * (room.lifeMap.length + 10)); // interval[ maxYMap, maxYMap + 10]
+			var finalY = Math.floor( 1 + Math.random() * 2) == 1 ? tmpOneY : tmpTwoY; // On choisi (50%) l'un ou l'autre valeur 
+
+			// Si le ratio est bon on push l'ennemi dans le tableau des ennemis
+			EnnemisArray[room.idRoom].push({ name: arrayEnnemis[count].name, life: arrayEnnemis[count].life, position: {x: finalX, y: finalY} });
+
+			return;
+		}
 	}
 
 	function logArrayElements(element, index, array) {

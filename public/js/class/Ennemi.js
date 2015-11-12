@@ -1,6 +1,7 @@
 Ennemie = function(game, currentEnnemie, tileSize){
 	this.game = game;
 	this.infoEnnemie = currentEnnemie;
+
 	this.obj = null;
 	this.tileSize = tileSize;
 	this.target = null;
@@ -21,19 +22,13 @@ Ennemie.prototype = {
 	},
 
   	create: function(){
-  		var posX = this.infoEnnemie.x * this.tileSize;
-  		var posY = this.infoEnnemie.y * this.tileSize;
+  		var posX = this.infoEnnemie.position.x * this.tileSize;
+  		var posY = this.infoEnnemie.position.y * this.tileSize;
 
   		this.obj = this.game.add.sprite(posX, posY, this.createBlock({x:15,y:15}, this.color));
 		this.obj.anchor.setTo(0.5, 0.5);
 
-		this.game.physics.arcade.enableBody(this.obj);
-
-		this.obj.body.collideWorldBounds = false;
-		this.obj.body.mass = 2000;
-	    this.obj.body.alive = false;
-
-	    this.game.time.events.loop(500, this.updateTimer, this);
+	    //this.game.time.events.loop(500, this.updateTimer, this);
 	},
 
 	update: function(){

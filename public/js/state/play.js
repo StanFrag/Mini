@@ -52,6 +52,7 @@ play.prototype = {
 
   		this.initPlayers();
   		this.initBullets();
+  		this.initEnnemis();
 
   		this.socketReception();
 
@@ -320,14 +321,33 @@ play.prototype = {
 	updateGameElements: function(){
 		var client = _currentPlayState.getCurrentUserById(USER_ID);
 
-		this.game.physics.arcade.collide(client.getSprite(), this.layer, this.colisionLayer);
-		this.game.physics.arcade.collide(this.bullets, this.layer, this.colisionBulletToTiles);
+		this.game.physics.arcade.collide(client.getSprite(), this.layer, this.colisionPlayersToTiles); // Joueur/Tuiles
+		this.game.physics.arcade.collide(this.bullets, this.layer, this.colisionBulletToTiles); // Balles/Tuiles
+		this.game.physics.arcade.collide(this.bullets, this.ennemis, this.colisionBulletToEnnemi); // Balles/Ennemis
+		this.game.physics.arcade.collide(client.getSprite(), this.ennemis, this.colisionPlayerToEnnemi); // Balles/Ennemis
 
 		this.updateArray(this.playersArray);
 	},
 
-	colisionLayer: function(){
-		console.log("collision detecté");
+	colisionPlayersToTiles: function(){
+		console.log("collision detecté entre une tuile et le client");
+	},
+
+	colisionPlayerToEnnemi: function(){
+		// A FAIRE
+		// On envoi au serveur que le joueurs ciblé a perdu de la vie
+		console.log("collision detecté entre un ennmi et le client");
+	},
+
+	colisionBulletToEnnemi: function(bullet, ennemi){
+		// Lors d'une collision entre une balle et une tuile dur
+		// On kill la balle
+		// On decremente la vie de l'ennemis
+		
+		bullet.kill();
+		console.log('Ennemi: ',ennemi);
+
+		socket.emit('ennemi.shot', { tileX: tile.x, tileY: tile.y, index: tile.index });
 	},
 
 	colisionBulletToTiles: function(bullet, tile){
@@ -338,8 +358,6 @@ play.prototype = {
 		bullet.kill();
 		console.log('Tile',tile);
 		socket.emit('tile.shot', { tileX: tile.x, tileY: tile.y, index: tile.index });
-		//var map = _currentPlayState.map.getMap();
-		//map.putTile(30, tile.x, tile.y);
 	},
 
 	// Function simple d'update d'Array
@@ -413,6 +431,31 @@ play.prototype = {
 	    this.bullets.setAll('alive', false); // On met la balle en dead a son initiation
 
 	    this.bullets.setAll('mass', 0.5); // On lui attribu une masse
+	},
+
+	// Initiation du groupe des ennemis
+	initEnnemis: function(){
+		// Création du groupe
+		this.ennemis = this.game.add.group();
+
+		// Parametres des ennemis crées
+	    this.ennemis.enableBody = true;
+	    this.ennemis.physicsBodyType = Phaser.Physics.ARCADE;
+
+	    for (var i = 0; i < this.room.ennemis.length; i++) {
+	    	// On crée une balle avec les caracteristiques de l'arme utilisé
+	    	var ennemi = new Ennemi(this.game, this.room.ennemis[i], this.room.tileSize);
+	    	// On la push dans le group
+	    	this.ennemis.add(ennemi.getSprite());
+	    };
+
+	    // Parametres des balles groupées
+	    this.ennemis.setAll('anchor.x', 0.5);
+	    this.ennemis.setAll('anchor.y', 0.5);
+	    this.ennemis.setAll('outOfBoundsKill', false); // Si la balle sort du cadre du jeu, est detruite
+	    this.ennemis.setAll('checkWorldBounds', true); // On check si la balle rebondie sur le mur
+	    this.ennemis.setAll('alive', false); // On met la balle en dead a son initiation
+	    this.ennemis.setAll('mass', 0.5); // On lui attribu une masse
 	},
 
 	initConstructionState: function(){
