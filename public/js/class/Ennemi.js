@@ -1,4 +1,4 @@
-Ennemie = function(game, currentEnnemie, tileSize){
+Ennemi = function(game, currentEnnemie, tileSize){
 	this.game = game;
 	this.infoEnnemie = currentEnnemie;
 
@@ -16,7 +16,7 @@ Ennemie = function(game, currentEnnemie, tileSize){
 	this.counter=0;
 };
   
-Ennemie.prototype = {
+Ennemi.prototype = {
 
 	preload: function(){
 	},
