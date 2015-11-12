@@ -1,19 +1,26 @@
 /*************************************
 //
-// bonebreaker app
+// Mini App
 //
 **************************************/
+'use strict'
+
 var USER_ID;
 var USER_ROOM = "";
 var CACHE_KEY = null;
+var HOST = 'http://localhost:3800/';
+//var HOST = 'http://mini.cleverapps.io/';
 
-var HOST = 'http://mini.cleverapps.io/';
-//var HOST = 'http://localhost:3700/';
 
 // Connexion au serveur socket
 var socket = io.connect(HOST);
     
-window.onload=function(){
+document.addEventListener("deviceready", function() {
+    setTimeout(function() {
+        navigator.splashscreen.hide();
+    }, 5000, false);
+});
+(function() {
 
     socket.emit('generateSocketId');
 
@@ -41,6 +48,4 @@ window.onload=function(){
         USER_ID = id;
         game.state.start("Boot");
     });
-
-
-}
+})();
