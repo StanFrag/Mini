@@ -8,18 +8,12 @@
 var USER_ID;
 var USER_ROOM = "";
 var CACHE_KEY = null;
-var HOST = 'http://localhost:3800/';
+var HOST = 'http://localhost:3900/';
 //var HOST = 'http://mini.cleverapps.io/';
-
 
 // Connexion au serveur socket
 var socket = io.connect(HOST);
-    
-document.addEventListener("deviceready", function() {
-    setTimeout(function() {
-        navigator.splashscreen.hide();
-    }, 5000, false);
-});
+
 (function() {
 
     socket.emit('generateSocketId');

@@ -87,7 +87,7 @@ app.get("/", function(req, res){
 });
 
 app.get('/maps/:file', function(req, res) {
-	var file = req.params.file
+	var file = req.params.file;
 	var path = './data/json/maps/' + file;
 	var tmp = require(path);
 	
@@ -95,7 +95,7 @@ app.get('/maps/:file', function(req, res) {
 })
 
 app.get('/gui/:file', function(req, res) {
-	var file = req.params.file
+	var file = req.params.file;
 	var path = './data/json/gui/' + file;
 
 	fs.readFile(path, 'utf8', function (err,data) {
@@ -106,5 +106,5 @@ app.get('/gui/:file', function(req, res) {
 	});
 })
 
-server.listen(runningPortNumber || 3800);
+server.listen(runningPortNumber || 3900);
 
