@@ -25,7 +25,9 @@ var play = function (game) {
 	this.currentWeapon = {fireRate : 100, nextFire: 0, bulletOnMap: 200, speedBullet: 500};
 	this.countDead = 0;
 	this.bullets = null;
-
+};
+  
+play.prototype = {
 
 	// Fonction de base permettant de recuperer les parametres du state precedent
 	init: function(currentRoom){
@@ -38,27 +40,27 @@ var play = function (game) {
 		this.game.stage.disableVisibilityChange = true;
 
 		this.game.load.tilemap('map', HOST + 'maps/map_level_'+ this.room.level +'.json', null, Phaser.Tilemap.TILED_JSON);
-		this.game.load.image('tiles', 'img/tile.png');
-		this.game.load.spritesheet('constructionTiles', 'img/tile.png', 32, 32, 50, 1, 1);
+    	this.game.load.image('tiles', 'img/tile.png');
+    	this.game.load.spritesheet('constructionTiles', 'img/tile.png', 32, 32, 50, 1, 1);
 	},
 
-		create: function(){
-			// Init les parametres du game
-			this.initGameParams();
-			// Init la map du jeu
-			this.initMap();
+  	create: function(){
+  		// Init les parametres du game
+  		this.initGameParams();
+  		// Init la map du jeu
+  		this.initMap();
 
-			this.initPlayers();
-			this.initBullets();
-			this.initEnnemis();
+  		this.initPlayers();
+  		this.initBullets();
+  		this.initEnnemis();
 
-			this.socketReception();
+  		this.socketReception();
 
-			var tmpClient = this.getCurrentUserById(USER_ID);
-			this.game.world.camera.focusOnXY(tmpClient.getPosition().x,tmpClient.getPosition().y);
+  		var tmpClient = this.getCurrentUserById(USER_ID);
+  		this.game.world.camera.focusOnXY(tmpClient.getPosition().x,tmpClient.getPosition().y);
 
-			// Init du pre-mode permettant de modifier l'environnement
-			this.initConstructionState();
+  		// Init du pre-mode permettant de modifier l'environnement
+  		this.initConstructionState();
 	},
 
 	// Loop du jeu
@@ -172,7 +174,7 @@ var play = function (game) {
 		}else{
 
 			this.constructionMarker.x = this.layer.getTileX(this.game.input.activePointer.worldX) * 32;
-			this.constructionMarker.y = this.layer.getTileY(this.game.input.activePointer.worldY) * 32;
+    		this.constructionMarker.y = this.layer.getTileY(this.game.input.activePointer.worldY) * 32;
 
 		    if (this.cursor.up.isDown){
 		        this.game.camera.y -= 4;
