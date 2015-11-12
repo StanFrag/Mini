@@ -8,8 +8,8 @@
 var USER_ID;
 var USER_ROOM = "";
 var CACHE_KEY = null;
-var HOST = 'http://localhost:3900/';
-//var HOST = 'http://mini.cleverapps.io/';
+//var HOST = 'http://localhost:3900/';
+var HOST = 'http://mini.cleverapps.io/';
 
 // Connexion au serveur socket
 var socket = io.connect(HOST);
